@@ -3,218 +3,148 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Commission & Allocation v4 · OTB Solutions</title>
+<title>OTB Comp Calculator</title>
 <style>
 :root{--navy:#002D72;--navy-deep:#001F52;--navy-soft:#E8EEF7;--orange:#F37321;--orange-soft:#FFE8D6;--ink:#1A1A1A;--ink-dim:#535353;--ink-soft:#8A8478;--line:#E2E2E2;--line-soft:#F1F1F1;--bg:#F8F6F1;--surface:#FFFFFF;--surface-warm:#FBF9F4;--green:#16A34A;--green-soft:#DCFCE7;--red:#DC2626;--red-soft:#FEE2E2;--amber:#D97706;--amber-soft:#FEF3C7;--purple:#5A4F75;--purple-soft:#ECE9F1;--teal:#0E7490;--teal-soft:#CFFAFE;--r-sm:6px;--r-md:10px;--r-lg:14px;--shadow-sm:0 1px 2px rgba(0,0,0,.04);--shadow-md:0 1px 3px rgba(0,0,0,.06),0 4px 12px rgba(0,0,0,.05);--font:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;--mono:ui-monospace,'SF Mono','JetBrains Mono',Consolas,monospace}
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;padding:24px 16px 80px}
-.wrap{max-width:1200px;margin:0 auto}
+.wrap{max-width:1100px;margin:0 auto}
 
-.header{background:linear-gradient(135deg,var(--navy) 0%,#003D8F 100%);color:#fff;border-radius:var(--r-lg);padding:24px 28px;margin-bottom:18px;box-shadow:var(--shadow-md)}
-.header .eye{font-size:11px;letter-spacing:1.8px;text-transform:uppercase;color:var(--orange);font-weight:700;margin-bottom:6px}
-.header h1{font-size:24px;letter-spacing:-0.6px;font-weight:800;margin-bottom:4px}
+.header{background:linear-gradient(135deg,var(--navy) 0%,#003D8F 100%);color:#fff;border-radius:var(--r-lg);padding:22px 28px;margin-bottom:18px;box-shadow:var(--shadow-md)}
+.header .eye{font-size:11px;letter-spacing:1.8px;text-transform:uppercase;color:var(--orange);font-weight:700;margin-bottom:5px}
+.header h1{font-size:24px;letter-spacing:-0.5px;font-weight:800;margin-bottom:3px}
 .header p{font-size:13px;opacity:0.85}
+
+/* Tab nav */
+.tabs{display:flex;gap:6px;margin-bottom:16px;border-bottom:1px solid var(--line)}
+.tab{padding:10px 22px;border:none;background:transparent;border-bottom:3px solid transparent;font-family:var(--font);font-size:13px;font-weight:700;color:var(--ink-soft);cursor:pointer;letter-spacing:0.5px;text-transform:uppercase;transition:all .15s;margin-bottom:-1px}
+.tab:hover{color:var(--ink-dim)}
+.tab.active{color:var(--navy);border-bottom-color:var(--orange)}
+
+.panel{display:none}
+.panel.active{display:block}
 
 .section{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:20px 24px;margin-bottom:14px;box-shadow:var(--shadow-sm)}
 .section-title{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap;gap:8px}
-.section-title h2{font-size:14px;font-weight:700;color:var(--navy);letter-spacing:0.3px;text-transform:uppercase}
-.section-title .subtotal{font-family:var(--mono);font-size:15px;font-weight:700;color:var(--ink)}
-.section-title .subtotal .lbl{font-family:var(--font);font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1px;margin-right:8px;font-weight:600}
+.section-title h2{font-size:13px;font-weight:800;color:var(--navy);letter-spacing:0.5px;text-transform:uppercase}
+.section-title .subtotal{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--ink)}
 .muted-help{font-size:12px;color:var(--ink-dim);line-height:1.5}
 
-/* Generic picker cards */
-.picker-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:6px}
-.pick-card{border:2px solid var(--line);background:var(--surface-warm);border-radius:var(--r-md);padding:14px 16px;cursor:pointer;transition:all .15s;text-align:left;font-family:var(--font)}
-.pick-card:hover{border-color:var(--navy-soft)}
-.pick-card.active{border-color:var(--navy);background:var(--navy-soft);box-shadow:var(--shadow-sm)}
-.pick-card.scn-op.active{border-color:var(--orange);background:var(--orange-soft)}
-.pick-card .pc-eye{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--orange);font-weight:700;margin-bottom:4px}
-.pick-card.scn-op.active .pc-eye{color:var(--navy-deep)}
-.pick-card .pc-ttl{font-size:15px;font-weight:800;color:var(--ink);margin-bottom:4px;letter-spacing:-0.2px}
-.pick-card .pc-dsc{font-size:12px;color:var(--ink-dim);line-height:1.4}
-
-/* Scenario pills (product) */
+/* Quick scenarios */
 .pills{display:flex;gap:8px;flex-wrap:wrap}
 .pill{padding:8px 14px;border:1px solid var(--line);background:var(--surface);border-radius:999px;font-size:12px;font-weight:700;color:var(--ink-dim);cursor:pointer;transition:all .15s;font-family:var(--font)}
 .pill:hover{border-color:var(--orange);color:var(--orange);transform:translateY(-1px)}
 .pill.active{background:var(--orange);color:#fff;border-color:var(--orange)}
 
-/* Account */
-.account-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.account-field{display:flex;flex-direction:column;gap:4px}
-.account-field label{font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1px;font-weight:600}
-.account-field .computed-display{padding:7px 10px;background:var(--navy-soft);border-radius:var(--r-sm);font-family:var(--mono);font-size:13px;font-weight:700;color:var(--navy);text-align:right}
+/* Compact input grid */
+.input-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:14px}
+.input-field{display:flex;flex-direction:column;gap:5px}
+.input-field label{font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1px;font-weight:700}
+.input-field .help{font-size:11px;color:var(--ink-soft);font-weight:400;text-transform:none;letter-spacing:0;margin-top:2px;line-height:1.4}
+.computed-display{padding:8px 12px;background:var(--navy-soft);border-radius:var(--r-sm);font-family:var(--mono);font-size:14px;font-weight:700;color:var(--navy);text-align:right}
 
-/* Simple row */
-.row{display:grid;grid-template-columns:1fr 130px 170px;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--line-soft)}
-.row:last-child{border-bottom:none}
-.row .lbl{font-weight:600}
-.row .sub{font-size:12px;color:var(--ink-soft)}
-.row .lbl-wrap{display:flex;flex-direction:column;gap:2px}
-
-input[type=number]{width:100%;padding:7px 10px;border:1px solid var(--line);border-radius:var(--r-sm);font-family:var(--mono);font-size:13px;text-align:right;background:var(--surface);color:var(--ink);transition:border .15s,box-shadow .15s}
-input[type=number]:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 3px var(--navy-soft)}
+input[type=number],input[type=text]{width:100%;padding:8px 12px;border:1px solid var(--line);border-radius:var(--r-sm);font-family:var(--mono);font-size:14px;text-align:right;background:var(--surface);color:var(--ink);transition:border .15s,box-shadow .15s}
+input[type=number]:focus,input[type=text]:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 3px var(--navy-soft)}
 .input-prefix{display:flex;align-items:center;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--surface);transition:border .15s,box-shadow .15s}
 .input-prefix:focus-within{border-color:var(--navy);box-shadow:0 0 0 3px var(--navy-soft)}
 .input-prefix .pfx{padding:0 6px 0 10px;color:var(--ink-soft);font-family:var(--mono);font-size:12px;flex-shrink:0}
 .input-prefix .sfx{padding:0 10px 0 4px;color:var(--ink-soft);font-family:var(--mono);font-size:12px;flex-shrink:0}
-.input-prefix input{border:none;padding:7px 6px 7px 0;background:transparent;flex:1;min-width:0}
+.input-prefix input{border:none;padding:8px 6px 8px 0;background:transparent;flex:1;min-width:0}
 .input-prefix input:focus{box-shadow:none}
 
-.computed{font-family:var(--mono);font-size:14px;font-weight:700;text-align:right;color:var(--ink);padding:7px 10px;background:var(--surface-warm);border-radius:var(--r-sm);border:1px solid var(--line-soft)}
-.computed.zero{color:var(--ink-soft);font-weight:500}
-.computed .yr{display:block;font-size:10px;font-weight:500;color:var(--ink-soft);margin-top:1px}
+/* Toggle */
+.toggle-group{display:inline-flex;border:1px solid var(--line);border-radius:var(--r-sm);overflow:hidden;background:var(--surface)}
+.toggle-btn{border:none;background:transparent;padding:8px 16px;cursor:pointer;font-size:12px;font-weight:700;color:var(--ink-dim);font-family:var(--font);transition:all .15s}
+.toggle-btn.active{background:var(--navy);color:#fff}
+.toggle-btn.warn.active{background:var(--orange)}
 
-/* PEPM tier ribbon */
-.pepm-tier{margin-top:10px;padding:10px 14px;background:var(--navy-soft);border-radius:var(--r-md);font-size:12px;color:var(--navy-deep)}
-.pepm-tier .ttl{font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--navy);margin-bottom:6px}
-.pepm-tier .bar{display:flex;height:24px;border-radius:var(--r-sm);overflow:hidden;background:#FFF;border:1px solid var(--line)}
-.pepm-tier .bar > div{display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;font-family:var(--mono);min-width:0;padding:0 6px;white-space:nowrap;overflow:hidden}
-.pepm-tier .bar .tpa{background:var(--teal)}
-.pepm-tier .bar .fmo{background:var(--orange)}
-.pepm-tier .bar .broker{background:var(--purple)}
-.pepm-tier .bar .empty{background:#F3F3F3;color:var(--ink-soft)}
-.pepm-tier .legend{margin-top:6px;font-size:11px;color:var(--ink-dim);display:flex;gap:14px;flex-wrap:wrap}
-.pepm-tier .legend span::before{content:'';display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:middle}
-.pepm-tier .legend .L-tpa::before{background:var(--teal)}
-.pepm-tier .legend .L-fmo::before{background:var(--orange)}
-.pepm-tier .legend .L-broker::before{background:var(--purple)}
-
-/* BL package selector */
-.bl-bar{display:flex;align-items:center;gap:10px;margin:14px 0 10px;padding:10px 14px;background:var(--purple-soft);border-radius:var(--r-md);flex-wrap:wrap}
-.bl-bar .bl-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--purple)}
-.bl-pills{display:flex;gap:6px}
-.bl-pill{padding:6px 12px;border:1px solid var(--purple);background:var(--surface);color:var(--purple);border-radius:999px;font-size:12px;font-weight:700;cursor:pointer;transition:all .12s;font-family:var(--font)}
+/* BL picker */
+.bl-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.bl-pill{padding:7px 14px;border:1px solid var(--purple);background:var(--surface);color:var(--purple);border-radius:999px;font-size:12px;font-weight:700;cursor:pointer;transition:all .12s;font-family:var(--font)}
 .bl-pill:hover{background:var(--purple-soft)}
 .bl-pill.active{background:var(--purple);color:#fff}
-.bl-bar .bl-meta{font-size:11px;color:var(--ink-dim);flex:1;min-width:160px}
+.bl-pill:disabled{opacity:0.3;cursor:not-allowed}
 
-/* FMO override row */
-.fmo-row{display:grid;grid-template-columns:1fr 110px 110px 170px;align-items:center;gap:12px;padding:10px 12px;background:var(--orange-soft);border:1px solid var(--orange);border-radius:var(--r-md);margin-top:10px}
-.fmo-row .lbl{font-weight:700;color:var(--ink)}
-.fmo-row .sub{font-size:11px;color:var(--ink-dim)}
+/* ER bill cards */
+.er-bill-card{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.er-bill{padding:16px 18px;border-radius:var(--r-md);border:1px solid var(--line);background:var(--surface);text-align:center;transition:all .2s}
+.er-bill.active{background:linear-gradient(135deg,var(--orange-soft) 0%,#FFD4B5 100%);border-color:var(--orange);transform:scale(1.02)}
+.er-bill .eb-label{font-size:10px;text-transform:uppercase;letter-spacing:1.3px;color:var(--ink-soft);font-weight:700;margin-bottom:5px}
+.er-bill.active .eb-label{color:var(--navy-deep)}
+.er-bill .eb-big{font-size:32px;font-weight:800;color:var(--navy);letter-spacing:-0.7px;font-family:var(--mono);line-height:1}
+.er-bill.active .eb-big{color:var(--orange)}
+.er-bill .eb-sub{font-size:11px;color:var(--ink-dim);margin-top:6px;line-height:1.4}
 
-/* Products */
-.prods-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r-md);background:var(--surface)}
-.prods{width:100%;border-collapse:collapse;min-width:780px}
-.prods thead th{background:var(--navy-soft);color:var(--navy);padding:9px 8px;font-size:10px;text-transform:uppercase;letter-spacing:1px;font-weight:700;text-align:right;border-bottom:1px solid var(--line)}
-.prods thead th:first-child{text-align:left;padding-left:14px}
-.prods thead th.center{text-align:center}
-.prods tbody td{padding:8px 8px;border-bottom:1px solid var(--line-soft);font-size:13px;vertical-align:middle}
-.prods tbody td:first-child{padding-left:14px}
-.prods tbody tr:last-child td{border-bottom:none}
-.prods tbody tr.off{opacity:.45}
-.prods .check-cell{text-align:center;width:42px}
-.prods .check-cell input{width:16px;height:16px;cursor:pointer;accent-color:var(--navy)}
-.prods .prod-name{font-weight:700;color:var(--ink)}
-.prods .prod-name .sub{display:block;font-size:11px;font-weight:500;color:var(--ink-soft);margin-top:1px}
-.prods .carrier-toggle{display:inline-flex;border:1px solid var(--line);border-radius:var(--r-sm);overflow:hidden;background:var(--surface)}
-.prods .carrier-toggle button{border:none;background:transparent;padding:3px 9px;cursor:pointer;font-size:11px;font-weight:700;color:var(--ink-soft);font-family:var(--font);transition:all .12s}
-.prods .carrier-toggle button.active{background:var(--orange);color:#fff}
-.prods .pct-cell input,.prods .prem-cell input,.prods .cm-cell input{width:78px;text-align:right;padding:5px 7px;font-family:var(--mono);font-size:12px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--surface)}
-.prods .pct-cell input:focus,.prods .prem-cell input:focus,.prods .cm-cell input:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 2px var(--navy-soft)}
-.prods .pct-cell,.prods .prem-cell,.prods .cm-cell,.prods .out-cell,.prods .out-yr-cell,.prods .carrier-cell{text-align:right;white-space:nowrap}
-.prods .carrier-cell{text-align:center}
-.prods .out-cell,.prods .out-yr-cell{font-family:var(--mono);font-weight:700;color:var(--ink);font-size:13px}
-.prods .out-yr-cell{color:var(--ink-dim);font-weight:600;font-size:12px}
-.prods tfoot td{background:var(--surface-warm);padding:10px 8px;font-size:12px;font-weight:700;color:var(--ink-dim);text-transform:uppercase;letter-spacing:0.5px;border-top:2px solid var(--line)}
-.prods tfoot td.r{text-align:right;color:var(--navy);font-family:var(--mono);font-size:14px}
-.prods tfoot td.r .yr{display:block;font-size:11px;color:var(--ink-soft);font-weight:600;margin-top:1px}
+/* Output table */
+.takes-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r-md);margin-top:8px}
+.takes{width:100%;border-collapse:collapse;min-width:640px}
+.takes thead th{background:var(--navy);color:#fff;padding:11px 14px;font-size:10px;text-transform:uppercase;letter-spacing:1px;font-weight:700;text-align:right;border-right:1px solid rgba(255,255,255,0.12)}
+.takes thead th:first-child{text-align:left}
+.takes thead th:last-child{border-right:none}
+.takes tbody td{padding:12px 14px;border-bottom:1px solid var(--line-soft);font-size:14px;vertical-align:middle;font-family:var(--mono);font-weight:700;text-align:right;color:var(--ink)}
+.takes tbody td:first-child{text-align:left;font-family:var(--font);font-weight:700;color:var(--ink)}
+.takes tbody td:last-child{background:var(--navy-soft);color:var(--navy);font-weight:800;font-size:15px}
+.takes tbody td.zero{color:var(--ink-soft);font-weight:400}
+.takes tbody td .yr{display:block;font-size:11px;color:var(--ink-soft);font-weight:500;margin-top:2px}
+.takes tbody tr.hierarchy td:first-child{color:var(--purple)}
+.takes tbody tr.hierarchy{background:rgba(90,79,117,0.04)}
+.takes tbody td .party-sub{display:block;font-size:10px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.5px;font-weight:500;margin-top:2px;font-family:var(--font)}
+.takes tfoot td{background:var(--surface-warm);padding:12px 14px;font-size:13px;font-weight:800;color:var(--navy);text-transform:uppercase;letter-spacing:0.5px;border-top:2px solid var(--navy);font-family:var(--mono);text-align:right}
+.takes tfoot td:first-child{text-align:left;font-family:var(--font)}
 
-/* Grand */
-.grand{background:linear-gradient(135deg,var(--navy) 0%,#003D8F 100%);color:#fff;border-radius:var(--r-lg);padding:22px 26px;margin-bottom:14px;box-shadow:var(--shadow-md)}
-.grand-eye{font-size:11px;letter-spacing:1.8px;text-transform:uppercase;color:var(--orange);font-weight:700;margin-bottom:10px}
-.grand-rows{display:flex;flex-direction:column;gap:5px}
-.grand-row{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;padding:3px 0}
-.grand-row .k{color:rgba(255,255,255,0.78);font-weight:500}
-.grand-row .v{font-family:var(--mono);font-weight:700;color:#fff}
-.grand-row.total{margin-top:8px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.2)}
-.grand-row.total .k{color:#fff;font-weight:700;font-size:15px}
-.grand-row.total .v{font-size:26px;letter-spacing:-0.8px}
-.grand-row.annual{padding-top:4px}
-.grand-row.annual .k{font-size:11px;color:rgba(255,255,255,0.6)}
-.grand-row.annual .v{font-size:14px;color:rgba(255,255,255,0.85);font-weight:600}
-.grand-row.ceiling .k{color:var(--orange);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:1px}
-.grand-row.ceiling .v{color:#fff;font-size:13px;opacity:0.9}
-
-/* Matrix */
-.matrix-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r-md);margin-top:8px}
-.matrix{width:100%;border-collapse:collapse;min-width:820px}
-.matrix thead th{background:var(--navy);color:#fff;padding:9px 8px;font-size:10px;text-transform:uppercase;letter-spacing:1px;font-weight:700;text-align:right;border-right:1px solid rgba(255,255,255,0.12)}
-.matrix thead th:first-child{text-align:left;padding-left:14px}
-.matrix thead th:last-child{border-right:none}
-.matrix thead th .smol{display:block;font-size:9px;font-weight:500;opacity:0.7;margin-top:2px;letter-spacing:0.5px;text-transform:none}
-.matrix tbody td{padding:6px 8px;border-bottom:1px solid var(--line-soft);border-right:1px solid var(--line-soft);font-size:13px;vertical-align:middle}
-.matrix tbody td:last-child{border-right:none}
-.matrix tbody td:first-child{padding-left:14px}
-.matrix tbody tr:last-child td{border-bottom:none}
-.matrix .party-name{font-weight:700;color:var(--ink)}
-.matrix .party-name .sub{display:block;font-size:10px;font-weight:500;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.6px;margin-top:1px}
-.matrix tr.hierarchy .party-name{color:var(--purple)}
-.matrix tr.hierarchy{background:rgba(90,79,117,0.04)}
-.matrix .pct-cell{text-align:right}
-.matrix .pct-cell .pct-input{width:54px;text-align:right;padding:4px 6px;font-family:var(--mono);font-size:12px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--surface)}
-.matrix .pct-cell .pct-input:focus{outline:none;border-color:var(--orange);box-shadow:0 0 0 2px var(--orange-soft)}
-.matrix .pct-cell .pct-suffix{color:var(--ink-soft);font-family:var(--mono);font-size:11px;margin-left:2px}
-.matrix td.money{text-align:right;font-family:var(--mono);font-weight:700;color:var(--navy);background:var(--navy-soft)}
-.matrix td.money .yr{display:block;font-size:10px;font-weight:500;color:var(--ink-soft);margin-top:1px}
-.matrix tfoot td{background:var(--surface-warm);border-top:2px solid var(--line);padding:10px 8px;font-size:12px;font-weight:700;color:var(--ink-dim);text-transform:uppercase;letter-spacing:0.5px}
-.matrix tfoot td.col-sum{text-align:right}
-.matrix tfoot td.col-sum.warn{color:var(--amber)}
-.matrix tfoot td.col-sum.err{color:var(--red)}
-.matrix tfoot td.col-sum.ok{color:var(--green)}
-
-/* Visual take-home bars */
-.viz-wrap{margin-top:20px;padding:18px 20px;background:var(--surface-warm);border-radius:var(--r-md);border:1px solid var(--line)}
-.viz-title{font-size:13px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:baseline}
-.viz-title .legend{display:flex;gap:14px;font-size:11px;font-weight:500;color:var(--ink-dim);text-transform:none;letter-spacing:0}
-.viz-title .legend span{display:inline-flex;align-items:center;gap:5px}
-.viz-title .legend span::before{content:'';display:inline-block;width:10px;height:10px;border-radius:2px}
-.viz-title .legend .L-er::before{background:var(--teal)}
-.viz-title .legend .L-aca::before{background:var(--green)}
-.viz-title .legend .L-acaO::before{background:#84CC16}
-.viz-title .legend .L-aflac::before{background:var(--orange)}
-.viz-title .legend .L-other::before{background:var(--purple)}
-.viz-bars{display:flex;flex-direction:column;gap:10px}
-.viz-row{display:grid;grid-template-columns:130px 1fr 130px;align-items:center;gap:14px}
+/* Viz bars */
+.viz-wrap{margin-top:18px;padding:16px 20px;background:var(--surface-warm);border-radius:var(--r-md);border:1px solid var(--line)}
+.viz-title{font-size:12px;font-weight:800;color:var(--navy);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px}
+.viz-bars{display:flex;flex-direction:column;gap:8px}
+.viz-row{display:grid;grid-template-columns:130px 1fr 110px;align-items:center;gap:12px}
 .viz-row .vname{font-size:12px;font-weight:700;color:var(--ink)}
-.viz-row .vname .vbring{display:block;font-size:10px;font-weight:500;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.6px;margin-top:1px}
 .viz-row .vtake{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--navy);text-align:right}
 .viz-row .vtake .yr{display:block;font-size:10px;color:var(--ink-soft);font-weight:500;margin-top:1px}
-.viz-bar{display:flex;height:26px;border-radius:var(--r-sm);overflow:hidden;background:#FFF;border:1px solid var(--line)}
-.viz-bar > div{height:100%;font-size:10px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--mono);min-width:0;overflow:hidden;white-space:nowrap}
-.viz-bar > div.er{background:var(--teal)}
-.viz-bar > div.aca{background:var(--green)}
-.viz-bar > div.acaO{background:#84CC16}
-.viz-bar > div.aflac{background:var(--orange)}
-.viz-bar > div.other{background:var(--purple)}
+.viz-bar{height:22px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-sm);overflow:hidden;display:flex}
+.viz-bar .fill{height:100%;background:linear-gradient(90deg,var(--navy) 0%,var(--orange) 100%);transition:width .25s ease}
 
-/* Enroller mode */
-.enroller-mode{display:flex;align-items:center;gap:14px;padding:12px 16px;margin-top:16px;background:var(--surface-warm);border-radius:var(--r-md);border:1px solid var(--line);flex-wrap:wrap}
-.enroller-mode .em-label{font-size:13px;font-weight:700;color:var(--ink)}
-.enroller-mode .em-help{font-size:11.5px;color:var(--ink-soft);flex:1;line-height:1.45;min-width:200px}
-.enroller-mode .em-input{display:flex;align-items:center;gap:6px}
-.enroller-mode .em-input .input-prefix{width:140px}
-.enroller-mode .em-row.hidden{display:none}
+/* Grand summary band */
+.grand-band{background:linear-gradient(135deg,var(--navy) 0%,#003D8F 100%);color:#fff;border-radius:var(--r-md);padding:18px 22px;margin-bottom:14px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px}
+.grand-band .gb-cell{}
+.grand-band .gb-label{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--orange);font-weight:700;margin-bottom:4px}
+.grand-band .gb-big{font-size:24px;font-weight:800;font-family:var(--mono);letter-spacing:-0.5px;line-height:1}
+.grand-band .gb-sub{font-size:11px;color:rgba(255,255,255,0.7);margin-top:4px}
 
-.toggle-group{display:inline-flex;border:1px solid var(--line);border-radius:var(--r-sm);overflow:hidden;background:var(--surface-warm)}
-.toggle-btn{border:none;background:transparent;padding:6px 14px;cursor:pointer;font-size:12px;font-weight:600;color:var(--ink-dim);font-family:var(--font);transition:all .15s}
-.toggle-btn.active{background:var(--navy);color:#fff}
+/* ASSUMPTIONS TAB */
+.assump-section{margin-bottom:18px}
+.assump-section h3{font-size:13px;font-weight:800;color:var(--navy);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.assump-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:12px}
+.assump-field{display:flex;flex-direction:column;gap:5px}
+.assump-field label{font-size:11px;color:var(--ink);font-weight:700}
+.assump-field .help{font-size:10.5px;color:var(--ink-soft);font-weight:400;line-height:1.4;margin-top:2px}
+
+/* Products table (assumptions) */
+.prods-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r-md);background:var(--surface)}
+.prods{width:100%;border-collapse:collapse;min-width:720px}
+.prods thead th{background:var(--navy-soft);color:var(--navy);padding:9px 8px;font-size:10px;text-transform:uppercase;letter-spacing:1px;font-weight:700;text-align:right;border-bottom:1px solid var(--line)}
+.prods thead th:first-child{text-align:left;padding-left:14px}
+.prods tbody td{padding:7px 8px;border-bottom:1px solid var(--line-soft);font-size:13px;vertical-align:middle}
+.prods tbody td:first-child{padding-left:14px;font-weight:700;color:var(--ink)}
+.prods tbody td.r{text-align:right}
+.prods .carrier-toggle{display:inline-flex;border:1px solid var(--line);border-radius:var(--r-sm);overflow:hidden;background:var(--surface)}
+.prods .carrier-toggle button{border:none;background:transparent;padding:3px 9px;cursor:pointer;font-size:11px;font-weight:700;color:var(--ink-soft);font-family:var(--font)}
+.prods .carrier-toggle button.active{background:var(--orange);color:#fff}
+.prods input[type=number]{width:74px;padding:4px 7px;font-size:12px}
 
 .btn{padding:8px 16px;border-radius:var(--r-sm);font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;border:1px solid var(--line);background:var(--surface);color:var(--ink-dim)}
 .btn:hover{border-color:var(--ink-dim);color:var(--ink)}
 .btn-row{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
 
-.footnote{font-size:11px;color:var(--ink-soft);text-align:center;margin-top:24px;padding:0 12px;line-height:1.5}
 .help-block{font-size:11.5px;color:var(--ink-dim);background:var(--amber-soft);padding:10px 14px;border-radius:var(--r-sm);margin-top:12px;line-height:1.5;border-left:3px solid var(--amber)}
 .help-block strong{color:var(--ink);font-weight:700}
 
+.footnote{font-size:11px;color:var(--ink-soft);text-align:center;margin-top:24px;padding:0 12px;line-height:1.5}
+
 @media (max-width:760px){
-  .picker-grid{grid-template-columns:1fr}
-  .account-grid{grid-template-columns:1fr}
-  .row{grid-template-columns:1fr 100px 140px;gap:8px;font-size:13px}
-  .grand-row.total .v{font-size:22px}
-  .viz-row{grid-template-columns:90px 1fr 100px;gap:8px}
+  .input-grid{grid-template-columns:1fr}
+  .er-bill-card{grid-template-columns:1fr}
+  .grand-band{grid-template-columns:1fr;gap:10px}
+  .assump-grid{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -222,698 +152,513 @@ input[type=number]:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 
 <div class="wrap">
 
 <div class="header">
-  <div class="eye">OTB Solutions · Commission Tool v4</div>
-  <h1>Commission & Allocation Calculator</h1>
-  <p>Choose your operating scenario, model the revenue streams, and see how dollars flow to each party — Channel (GA), TPA, FMO, Broker, Enroller, plus Aflac hierarchy.</p>
+  <div class="eye">OTB Solutions · Comp Calculator</div>
+  <h1>Who Gets Paid What</h1>
+  <p>Locked first-dollar-out model. Just plug in the case, see the distribution.</p>
 </div>
 
-<!-- STEP 1 · COMP MODEL -->
-<div class="section">
-  <div class="section-title"><h2>Step 1 · Compensation Model</h2></div>
-  <div class="picker-grid">
-    <button type="button" class="pick-card active" data-model="standard">
-      <div class="pc-eye">Model A</div>
-      <div class="pc-ttl">Standard</div>
-      <div class="pc-dsc">5 parties · no Aflac hierarchy slice.</div>
-    </button>
-    <button type="button" class="pick-card" data-model="aflacDsc">
-      <div class="pc-eye">Model B</div>
-      <div class="pc-ttl">Aflac + DSC</div>
-      <div class="pc-dsc">DSC slices Aflac comp.</div>
-    </button>
-    <button type="button" class="pick-card" data-model="aflacDscRsc">
-      <div class="pc-eye">Model C</div>
-      <div class="pc-ttl">Aflac + DSC + RSC</div>
-      <div class="pc-dsc">Full Aflac hierarchy.</div>
-    </button>
-  </div>
+<div class="tabs">
+  <button type="button" class="tab active" data-tab="calc">Calculator</button>
+  <button type="button" class="tab" data-tab="assump">Assumptions</button>
 </div>
 
-<!-- STEP 2 · OPERATING SCENARIO -->
-<div class="section">
-  <div class="section-title"><h2>Step 2 · Operating Scenario — Who is Doing the Work</h2></div>
-  <div class="picker-grid">
-    <button type="button" class="pick-card scn-op" data-scnop="brokerLed">
-      <div class="pc-eye">Scenario A</div>
-      <div class="pc-ttl">Broker-Led</div>
-      <div class="pc-dsc">Broker does everything: writes + enrolls. Aflac BL4 — broker takes ~95% of Aflac. GA gets small override, no DSC/RSC.</div>
-    </button>
-    <button type="button" class="pick-card scn-op active" data-scnop="brokerChannel">
-      <div class="pc-eye">Scenario B · Default</div>
-      <div class="pc-ttl">Broker + Channel</div>
-      <div class="pc-dsc">Broker writes; Channel (GA) enrolls + trains. Aflac BL2/BL3. DSC + RSC paid; production stays with the market.</div>
-    </button>
-    <button type="button" class="pick-card scn-op" data-scnop="aflacInternal">
-      <div class="pc-eye">Scenario C</div>
-      <div class="pc-ttl">Aflac-Internal</div>
-      <div class="pc-dsc">Aflac agent writes + enrolls. No broker on case, but GA + FMO still get Aflac overrides funded from DSC/RSC reduction.</div>
-    </button>
-  </div>
-</div>
+<!-- ──────────────── CALCULATOR TAB ──────────────── -->
+<div class="panel active" id="panel-calc">
 
-<!-- STEP 3 · ACCOUNT + PRODUCT SCENARIO -->
-<div class="section">
-  <div class="section-title"><h2>Step 3 · Account & Product Mix</h2></div>
-  <div class="muted-help" style="margin-bottom:10px"><strong>Product scenario presets</strong> — auto-fill the product table using Channel One assumptions.</div>
-  <div class="pills" id="scenarioBtns">
-    <button type="button" class="pill" data-scn="blank">Blank</button>
-    <button type="button" class="pill" data-scn="aflacOnly">Aflac Only</button>
-    <button type="button" class="pill" data-scn="aflacPerm">Aflac + Permanent</button>
-    <button type="button" class="pill active" data-scn="allAnc">All Ancillary</button>
-    <button type="button" class="pill" data-scn="allBen">All Benefits</button>
-  </div>
-  <div class="account-grid" style="margin-top:16px">
-    <div class="account-field">
-      <label>Employees on ICHRA</label>
-      <input type="number" id="ee" min="0" max="100000" step="1" value="25">
+  <div class="section">
+    <div class="section-title"><h2>The Case</h2></div>
+    <div class="muted-help" style="margin-bottom:6px"><strong>Scenario preset</strong> auto-fills the Aflac premium and penetration. Pick one or set EE count and toggles manually.</div>
+    <div class="pills" id="scnPills">
+      <button type="button" class="pill" data-scn="blank">Blank</button>
+      <button type="button" class="pill" data-scn="aflacOnly">Aflac Only</button>
+      <button type="button" class="pill" data-scn="aflacPerm">Aflac + Permanent</button>
+      <button type="button" class="pill active" data-scn="allAnc">All Ancillary</button>
+      <button type="button" class="pill" data-scn="allBen">All Benefits</button>
     </div>
-    <div class="account-field">
-      <label>Avg members per EE (dep factor)</label>
-      <input type="number" id="depFactor" min="0" max="10" step="0.1" value="1.7">
-    </div>
-    <div class="account-field">
-      <label>Total members (computed)</label>
-      <div class="computed-display" id="totalMembers">42</div>
-    </div>
-  </div>
-</div>
 
-<!-- STEP 4 · REVENUE STREAMS -->
-<div class="section">
-  <div class="section-title">
-    <h2>Step 4 · Revenue Streams</h2>
-    <div class="subtotal"><span class="lbl">Section total</span><span id="streamsTotal">$0</span></div>
-  </div>
+    <div class="input-grid">
+      <div class="input-field">
+        <label>Employees on ICHRA</label>
+        <input type="number" id="ee" min="0" max="100000" step="1" value="25">
+      </div>
+      <div class="input-field">
+        <label>Total members <span class="help">(EE × dep factor — set in Assumptions)</span></label>
+        <div class="computed-display" id="totalMembers">42</div>
+      </div>
 
-  <div class="row">
-    <div class="lbl-wrap"><span class="lbl">ER ICHRA PEPM</span><span class="sub">Per employee per month — distributes by tier: TPA gets first $10, FMO next $10, Broker beyond $20</span></div>
-    <div class="input-prefix"><span class="pfx">$</span><input type="number" id="erPepm" min="0" max="500" step="0.5" value="20"></div>
-    <div class="computed" id="erPepmOut">$0</div>
-  </div>
-  <div class="pepm-tier">
-    <div class="ttl">PEPM tier allocation (auto)</div>
-    <div class="bar" id="pepmBar"></div>
-    <div class="legend"><span class="L-tpa">TPA (first $10)</span><span class="L-fmo">FMO ($10-$20)</span><span class="L-broker">Broker ($20+)</span></div>
-    <div class="muted-help" style="margin-top:6px;font-size:11px"><strong>Rule:</strong> $20 PEPM is typical; higher reserved for thinner product mixes. The matrix below auto-defaults to this split when you change ER PEPM.</div>
-  </div>
+      <div class="input-field">
+        <label>Does the ER contribute ≥ $20 PEPM to Aflac?</label>
+        <div class="toggle-group">
+          <button type="button" class="toggle-btn warn active" id="aflacContribNo">No</button>
+          <button type="button" class="toggle-btn warn" id="aflacContribYes">Yes</button>
+        </div>
+        <div class="help">If yes, ER PEPM bill drops to $20; GA + Broker forfeit their $5 kickers.</div>
+      </div>
 
-  <div class="row">
-    <div class="lbl-wrap"><span class="lbl">ACA Carrier PMPM</span><span class="sub">Per member per month commission from the ACA carrier</span></div>
-    <div class="input-prefix"><span class="pfx">$</span><input type="number" id="acaPmpm" min="0" max="500" step="0.5" value="20"></div>
-    <div class="computed" id="acaPmpmOut">$0</div>
-  </div>
+      <div class="input-field">
+        <label>Is there a broker on the case?</label>
+        <div class="toggle-group">
+          <button type="button" class="toggle-btn active" id="brokerYes">Yes</button>
+          <button type="button" class="toggle-btn" id="brokerNo">No</button>
+        </div>
+        <div class="help">If no, writing Aflac agent absorbs broker hat (+$15 PEPM + BL share).</div>
+      </div>
 
-  <div class="row">
-    <div class="lbl-wrap"><span class="lbl">ACA Carrier PMPM Override</span><span class="sub">FMO-level override — always 100% to FMO. Channel One default $3.90 PMPM</span></div>
-    <div class="input-prefix"><span class="pfx">$</span><input type="number" id="acaOver" min="0" max="50" step="0.05" value="3.9"></div>
-    <div class="computed" id="acaOverOut">$0</div>
-  </div>
-
-  <div class="bl-bar">
-    <span class="bl-label">Aflac Broker Package</span>
-    <div class="bl-pills" id="blPills">
-      <button type="button" class="bl-pill" data-bl="BL1">BL1 · ~30%</button>
-      <button type="button" class="bl-pill active" data-bl="BL2">BL2 · ~40%</button>
-      <button type="button" class="bl-pill" data-bl="BL3">BL3 · ~50%</button>
-      <button type="button" class="bl-pill" data-bl="BL4">BL4 · ~95%</button>
-      <button type="button" class="bl-pill" data-bl="NONE">None</button>
-    </div>
-    <span class="bl-meta" id="blMeta">BL2 — Broker takes ~40% of Aflac bottom-line; remainder splits across Agent/DSC/RSC/Director.</span>
-  </div>
-
-  <div style="margin:14px 0 10px"><strong style="font-size:13px;color:var(--navy);text-transform:uppercase;letter-spacing:0.3px">Carrier commissions</strong>
-  <div class="muted-help" style="margin-top:4px">Check what's in your comp plan. Penetration × Avg annual premium × Comm % = monthly. Aflac products feed the "Aflac" pool; Other products feed the "Other" pool.</div></div>
-  <div class="prods-wrap">
-    <table class="prods">
-      <thead>
-        <tr>
-          <th class="center">On</th>
-          <th>Product</th>
-          <th class="center">Carrier</th>
-          <th>Penetration</th>
-          <th>Avg annual prem</th>
-          <th>Comm %</th>
-          <th>$ / mo</th>
-          <th>$ / yr</th>
-        </tr>
-      </thead>
-      <tbody id="prodBody"></tbody>
-      <tfoot>
-        <tr><td colspan="6">Aflac subtotal</td><td class="r" id="aflacSub">$0</td><td></td></tr>
-        <tr><td colspan="6">Other carrier subtotal</td><td class="r" id="otherSub">$0</td><td></td></tr>
-        <tr><td colspan="6">Total commissions</td><td class="r" id="prodTotal">$0</td><td></td></tr>
-      </tfoot>
-    </table>
-  </div>
-
-  <div class="fmo-row">
-    <div class="lbl-wrap"><span class="lbl">FMO Aflac Override</span><span class="sub">% of Aflac commission + optional flat $ bonus — funded from DSC/RSC slice in Scenario C</span></div>
-    <div class="input-prefix"><input type="number" id="fmoAflacPct" min="0" max="20" step="0.5" value="2"><span class="sfx">%</span></div>
-    <div class="input-prefix"><span class="pfx">$</span><input type="number" id="fmoAflacBonus" min="0" max="100000" step="50" value="0"></div>
-    <div class="computed" id="fmoAflacOut">$0</div>
-  </div>
-</div>
-
-<!-- GRAND TOTAL -->
-<div class="grand">
-  <div class="grand-eye">Grand Total Revenue Generated</div>
-  <div class="grand-rows">
-    <div class="grand-row"><span class="k">ER ICHRA PEPM</span><span class="v" id="gtEr">$0</span></div>
-    <div class="grand-row"><span class="k">ACA Carrier PMPM</span><span class="v" id="gtAca">$0</span></div>
-    <div class="grand-row"><span class="k">ACA PMPM Override</span><span class="v" id="gtAcaOver">$0</span></div>
-    <div class="grand-row"><span class="k">Aflac commissions</span><span class="v" id="gtAflac">$0</span></div>
-    <div class="grand-row"><span class="k">Other carrier commissions</span><span class="v" id="gtOther">$0</span></div>
-    <div class="grand-row total"><span class="k">Total monthly</span><span class="v" id="gtMo">$0</span></div>
-    <div class="grand-row annual"><span class="k">Annualized</span><span class="v" id="gtYr">$0 / yr</span></div>
-    <div class="grand-row ceiling"><span class="k">Bottom Line Pool (full hierarchy rate)</span><span class="v" id="gtCeiling">$0 / yr</span></div>
-  </div>
-</div>
-
-<!-- STEP 5 · ALLOCATION -->
-<div class="section">
-  <div class="section-title">
-    <h2>Step 5 · Allocation Matrix</h2>
-    <div class="subtotal"><span class="lbl">Take-home check</span><span id="matrixGrand">$0</span></div>
-  </div>
-  <p class="muted-help" style="margin-bottom:10px">Each column should sum to 100%. Defaults reflect the Operating Scenario + Aflac BL package + PEPM tier rule. Edit any cell to override.</p>
-  <div class="matrix-wrap">
-    <table class="matrix">
-      <thead><tr id="matrixHead"></tr></thead>
-      <tbody id="matrixBody"></tbody>
-      <tfoot><tr id="matrixFoot"></tr></tfoot>
-    </table>
-  </div>
-
-  <div class="enroller-mode">
-    <div class="em-label">Enroller pay mode</div>
-    <div class="em-help" id="enrollerHelp">% of streams — enroller takes a slice from each stream's column (per the matrix).</div>
-    <div class="em-input">
-      <div class="toggle-group">
-        <button type="button" class="toggle-btn active" id="enrModePct">% of streams</button>
-        <button type="button" class="toggle-btn" id="enrModeDiem">Per-diem $/mo</button>
+      <div class="input-field" style="grid-column:span 2" id="blField">
+        <label>Aflac broker package</label>
+        <div class="bl-row" id="blPills">
+          <button type="button" class="bl-pill" data-bl="BL1">BL1 · ~30%</button>
+          <button type="button" class="bl-pill active" data-bl="BL2">BL2 · ~40%</button>
+          <button type="button" class="bl-pill" data-bl="BL3">BL3 · ~50%</button>
+          <button type="button" class="bl-pill" data-bl="BL4">BL4 · ~95%</button>
+        </div>
+        <div class="help">Determines broker's slice of the Aflac comp pool. Balance flows through Enroller / DSC / RSC.</div>
       </div>
     </div>
-    <div class="em-input em-row hidden" id="enrDiemRow">
-      <div class="input-prefix"><span class="pfx">$</span><input type="number" id="enrDiem" min="0" max="100000" step="50" value="3000"></div>
-      <span style="font-size:11px;color:var(--ink-soft)">/mo</span>
+  </div>
+
+  <!-- ER BILL COMPARISON -->
+  <div class="section">
+    <div class="section-title"><h2>ER Bill — Side-by-Side</h2></div>
+    <div class="er-bill-card">
+      <div class="er-bill" id="erBillNo">
+        <div class="eb-label">No Aflac contribution</div>
+        <div class="eb-big" id="erBillNoVal">$30 PEPM</div>
+        <div class="eb-sub">$20 base + $10 kicker ($5 GA + $5 Broker)</div>
+      </div>
+      <div class="er-bill" id="erBillYes">
+        <div class="eb-label">ER contributes ≥ $20 to Aflac</div>
+        <div class="eb-big" id="erBillYesVal">$20 PEPM</div>
+        <div class="eb-sub">Just TPA $10 + FMO $10 — kicker forfeited</div>
+      </div>
     </div>
+  </div>
+
+  <!-- GRAND TOTAL BAND -->
+  <div class="grand-band">
+    <div class="gb-cell"><div class="gb-label">Monthly book revenue</div><div class="gb-big" id="gbMonthly">$0</div><div class="gb-sub">All streams combined</div></div>
+    <div class="gb-cell"><div class="gb-label">Annual</div><div class="gb-big" id="gbAnnual">$0</div><div class="gb-sub">× 12</div></div>
+    <div class="gb-cell"><div class="gb-label">Aflac comm / mo</div><div class="gb-big" id="gbAflac">$0</div><div class="gb-sub">Computed from products</div></div>
+  </div>
+
+  <!-- DISTRIBUTION TABLE -->
+  <div class="section">
+    <div class="section-title"><h2>Who Gets Paid What</h2></div>
+    <div class="takes-wrap">
+      <table class="takes">
+        <thead>
+          <tr>
+            <th>Party</th>
+            <th>$ / month</th>
+            <th>$ / year</th>
+            <th>Per EE / mo</th>
+          </tr>
+        </thead>
+        <tbody id="takesBody"></tbody>
+        <tfoot>
+          <tr id="takesFoot"></tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <div class="viz-wrap">
+      <div class="viz-title">Take-home — visual scale</div>
+      <div class="viz-bars" id="vizBars"></div>
+    </div>
+
+    <div class="help-block">
+      <strong>Distribution rules:</strong> TPA always gets $10 PEPM. FMO always gets $10 PEPM + $10 (AOR) + 100% of ACA override. Channel gets $5 PEPM (Stream B) + $5 PEPM kicker (forfeited if ER contributes ≥$20 Aflac) + 5% Aflac override. Broker gets $5 PEPM kicker + $15 PEPM pool (keeps $7, passes $8 to Enroller) + BL package share of Aflac. Enroller gets pass-through from Broker + Aflac BL remainder. DSC + RSC get Aflac hierarchy slices. All defaults editable in the Assumptions tab.
+    </div>
+  </div>
+</div>
+
+<!-- ──────────────── ASSUMPTIONS TAB ──────────────── -->
+<div class="panel" id="panel-assump">
+
+  <div class="section">
+    <div class="section-title"><h2>Stream Rates</h2></div>
+    <div class="muted-help" style="margin-bottom:12px">The locked first-dollar-out distribution. Change these only if you're modeling a non-standard deal.</div>
+
+    <div class="assump-section">
+      <h3>ER ICHRA PEPM (Stream C)</h3>
+      <div class="assump-grid">
+        <div class="assump-field"><label>ER PEPM base</label><div class="input-prefix"><span class="pfx">$</span><input type="number" id="a_erBase" value="20" min="0" step="0.5"></div><div class="help">Always paid by ER per EE per month.</div></div>
+        <div class="assump-field"><label>TPA fixed line</label><div class="input-prefix"><span class="pfx">$</span><input type="number" id="a_tpaPepm" value="10" min="0" step="0.5"></div><div class="help">Off the top, always.</div></div>
+        <div class="assump-field"><label>FMO fixed line (ER PEPM)</label><div class="input-prefix"><span class="pfx">$</span><input type="number" id="a_fmoErPepm" value="10" min="0" step="0.5"></div><div class="help">Always paid, balance of base PEPM.</div></div>
+        <div class="assump-field"><label>GA kicker</label><div class="input-prefix"><span class="pfx">$</span><input type="number" id="a_gaKicker" value="5" min="0" step="0.5"></div><div class="help">Conditional: forfeited if ER subsidizes Aflac.</div></div>
+        <div class="assump-field"><label>Broker kicker</label><div class="input-prefix"><span class="pfx">$</span><input type="number" id="a_brokerKicker" value="5" min="0" step="0.5"></div><div class="help">Conditional: forfeited if ER subsidizes Aflac.</div></div>
+        <div class="assump-field"><label>Aflac contribution threshold</label><div class="input-prefix"><span class="pfx">$</span><input type="number" id="a_aflacThresh" value="20" min="0" step="1"></div><div class="help">ER must contribute this much PEPM to Aflac to forfeit kicker.</div></div>
+      </div>
+    </div>
+
+    <div class="assump-section">
+      <h3>ACA Carrier PMPM (Stream B)</h3>
+      <div class="assump-grid">
+        <div class="assump-field"><label>ACA PMPM commission</label><div class="input-prefix"><span class="pfx">$</span><input type="number" id="a_acaPmpm" value="20" min="0" step="0.5"></div><div class="help">Per member per month from ACA carrier.</div></div>
+        <div class="assump-field"><label>FMO AOR fee</label><div class="input-prefix"><span class="pfx">$</span><input type="number" id="a_fmoAor" value="10" min="0" step="0.5"></div><div class="help">PEPM — Agent of Record fee.</div></div>
+        <div class="assump-field"><label>GA override on ACA</label><div class="input-prefix"><span class="pfx">$</span><input type="number" id="a_gaAca" value="5" min="0" step="0.5"></div><div class="help">PEPM — flat override for GA.</div></div>
+        <div class="assump-field"><label>Broker pool</label><div class="input-prefix"><span class="pfx">$</span><input type="number" id="a_brokerPool" value="15" min="0" step="0.5"></div><div class="help">PEPM — broker distributes to enroller.</div></div>
+        <div class="assump-field"><label>Broker pass-through to Enroller</label><div class="input-prefix"><span class="pfx">$</span><input type="number" id="a_passThrough" value="8" min="0" step="0.5"></div><div class="help">PEPM from broker pool to enroller (broker keeps the rest).</div></div>
+        <div class="assump-field"><label>Dep factor (members per EE)</label><input type="number" id="a_depFactor" value="1.7" min="0.1" max="10" step="0.1"><div class="help">Used to compute total members from EE count.</div></div>
+      </div>
+    </div>
+
+    <div class="assump-section">
+      <h3>ACA Carrier Override (Stream A)</h3>
+      <div class="assump-grid">
+        <div class="assump-field"><label>ACA PMPM Override</label><div class="input-prefix"><span class="pfx">$</span><input type="number" id="a_acaOver" value="3.9" min="0" step="0.05"></div><div class="help">Locked 100% to FMO.</div></div>
+      </div>
+    </div>
+
+    <div class="assump-section">
+      <h3>Aflac Override (Stream D)</h3>
+      <div class="assump-grid">
+        <div class="assump-field"><label>GA Aflac override %</label><div class="input-prefix"><input type="number" id="a_gaAflacPct" value="5" min="0" step="0.5"><span class="sfx">%</span></div><div class="help">Fixed across all BL packages.</div></div>
+        <div class="assump-field"><label>FMO Aflac override %</label><div class="input-prefix"><input type="number" id="a_fmoAflacPct" value="0" min="0" step="0.5"><span class="sfx">%</span></div><div class="help">Optional — separate from ACA override.</div></div>
+        <div class="assump-field"><label>FMO flat bonus per case</label><div class="input-prefix"><span class="pfx">$</span><input type="number" id="a_fmoBonus" value="0" min="0" step="50"></div><div class="help">Flat $/mo bonus for FMO.</div></div>
+      </div>
+    </div>
+
+    <div class="assump-section">
+      <h3>Other Carrier Splits (Stream D)</h3>
+      <div class="assump-grid">
+        <div class="assump-field"><label>GA override on Other Carrier</label><div class="input-prefix"><input type="number" id="a_otherGaPct" value="5" min="0" step="0.5"><span class="sfx">%</span></div><div class="help">Negotiated per carrier.</div></div>
+        <div class="assump-field"><label>Broker share of Other Carrier</label><div class="input-prefix"><input type="number" id="a_otherBrokerPct" value="55" min="0" step="1"><span class="sfx">%</span></div><div class="help">After GA override. Enroller gets remainder.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title"><h2>Products & Penetration</h2></div>
+    <div class="muted-help" style="margin-bottom:12px">Each product's avg annual premium per holder, commission %, and default penetration (used when "Calculator" tab is in Custom scenario mode).</div>
+    <div class="prods-wrap">
+      <table class="prods">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Carrier</th>
+            <th class="r">Pen %</th>
+            <th class="r">Avg annual prem $</th>
+            <th class="r">Comm %</th>
+          </tr>
+        </thead>
+        <tbody id="prodBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title"><h2>Aflac Broker Package Splits</h2></div>
+    <div class="muted-help" style="margin-bottom:12px">% of Aflac comp pool flowing to each Aflac level under each BL package. Channel (GA) override is separate (5% off the top before BL split).</div>
+    <div class="prods-wrap">
+      <table class="prods">
+        <thead>
+          <tr>
+            <th>BL</th>
+            <th class="r">Broker (Level 14)</th>
+            <th class="r">Enroller (Level 01)</th>
+            <th class="r">DSC (Level 30)</th>
+            <th class="r">RSC (Level 40)</th>
+          </tr>
+        </thead>
+        <tbody id="blBody"></tbody>
+      </table>
+    </div>
+    <div class="muted-help" style="margin-top:10px">Source: Aflac Heaped NMO Level 14 Commissions tables. Channel One 2025-2026 rates.</div>
   </div>
 
   <div class="btn-row">
-    <button type="button" class="btn" id="resetDefaultsBtn">Reset matrix to scenario defaults</button>
-    <button type="button" class="btn" id="normalizeBtn">Normalize all columns to 100%</button>
-  </div>
-
-  <!-- Visual take-home bars -->
-  <div class="viz-wrap">
-    <div class="viz-title">
-      <span>Take-home Breakdown — where each party's money comes from</span>
-      <span class="legend"><span class="L-er">ER PEPM</span><span class="L-aca">ACA</span><span class="L-acaO">ACA Override</span><span class="L-aflac">Aflac</span><span class="L-other">Other</span></span>
-    </div>
-    <div class="viz-bars" id="vizBars"></div>
-  </div>
-
-  <div class="help-block">
-    <strong>Default rules:</strong> Channel (GA) Aflac override is fixed at <strong>5%</strong> across all BL packages. If Channel also acts as broker or enroller for a case, bump those rows up manually and reduce Enroller/Broker accordingly. FMO exclusively owns the ACA PMPM override + Aflac override row (2% + bonus). TPA always gets the first $10 PEPM. Broker share of Aflac matches the BL package (30/40/50/90%). DSC + RSC pulled from actual Aflac level tables — high-single-digits, never 25%.
+    <button type="button" class="btn" id="resetAssumpBtn">Reset all assumptions to defaults</button>
   </div>
 </div>
 
 <p class="footnote">
-  Local tool — runs entirely in your browser, no data sent anywhere. (c) OTB Solutions LLC.
-  Channel One Commission Comparison numbers + Aflac Heaped NMO BL1-BL4 used for scenario defaults. Actual commissions depend on appointments, hierarchy, persistency, and chargebacks.
+  Local tool — runs in your browser. (c) OTB Solutions LLC. Locked first-dollar-out distribution model. Numbers are illustrative — actual commissions depend on appointments, persistency, and chargebacks.
 </p>
 
 </div>
 
 <script>
-// ── PARTIES ─────────────────────────────────────────────────────────
-const PARTY_INFO = {
-  ga:       { label:'Channel (GA)', brings:'Activation & engagement' },
-  tpa:      { label:'TPA Admin',    brings:'ICHRA admin & payment' },
-  fmo:      { label:'FMO',          brings:'Product, tech, ACA admin' },
-  broker:   { label:'Broker',       brings:'Account ownership (Level 14)' },
-  enroller: { label:'Enroller',     brings:'Aflac writing agent (Level 01)' },
-  dsc:      { label:'DSC',          brings:'Aflac hierarchy (Level 30)', hierarchy:true },
-  rsc:      { label:'RSC',          brings:'Aflac hierarchy (Level 40)', hierarchy:true }
+// ── DEFAULTS ────────────────────────────────────────────────────────
+const DEFAULTS = {
+  erBase: 20, tpaPepm: 10, fmoErPepm: 10, gaKicker: 5, brokerKicker: 5, aflacThresh: 20,
+  acaPmpm: 20, fmoAor: 10, gaAca: 5, brokerPool: 15, passThrough: 8, depFactor: 1.7,
+  acaOver: 3.9,
+  gaAflacPct: 5, fmoAflacPct: 0, fmoBonus: 0,
+  otherGaPct: 5, otherBrokerPct: 55
 };
+const ASSUMP_KEYS = Object.keys(DEFAULTS);
 
-const STREAMS = [
-  { k:'erPepm',  label:'ER ICHRA PEPM',     short:'ER PEPM' },
-  { k:'acaPmpm', label:'ACA PMPM',          short:'ACA PMPM' },
-  { k:'acaOver', label:'ACA Override',      short:'ACA OVR' },
-  { k:'aflac',   label:'Aflac Commissions', short:'Aflac' },
-  { k:'other',   label:'Other Carrier',     short:'Other' }
-];
-
-// ── PRODUCTS ────────────────────────────────────────────────────────
+// Products
 const PRODUCTS = [
-  { k:'aflacSuite', label:'Aflac Suite',          desc:'Accident/Cancer/CI/Hospital · $840/holder/yr (1.4 pol × $600)', pct:45,   annualPrem:840,  carrier:'aflac' },
-  { k:'permLife',   label:'Permanent Life',       desc:'Cash value, lifetime',                                            pct:58.5, annualPrem:3600, carrier:'aflac' },
-  { k:'std',        label:'Short-Term Disability',desc:'Income replacement, short',                                       pct:60,   annualPrem:400,  carrier:'aflac' },
-  { k:'ltd',        label:'Long-Term Disability', desc:'Income replacement, long',                                        pct:60,   annualPrem:400,  carrier:'aflac' },
-  { k:'dental',     label:'Dental',               desc:'Voluntary',                                                       pct:25,   annualPrem:300,  carrier:'other' },
-  { k:'vision',     label:'Vision',               desc:'Voluntary',                                                       pct:25,   annualPrem:120,  carrier:'other' },
-  { k:'hospital',   label:'Hospital Indemnity',   desc:'Standalone',                                                      pct:45,   annualPrem:360,  carrier:'aflac' },
-  { k:'cancer',     label:'Cancer',               desc:'Standalone',                                                      pct:70,   annualPrem:300,  carrier:'aflac' },
-  { k:'ci',         label:'Critical Illness',     desc:'Standalone',                                                      pct:70,   annualPrem:300,  carrier:'aflac' },
-  { k:'accident',   label:'Accident',             desc:'Standalone',                                                      pct:48,   annualPrem:216,  carrier:'aflac' }
+  { k:'aflacSuite', label:'Aflac Suite',          carrier:'aflac', annualPrem:840,  pct:45 },
+  { k:'permLife',   label:'Permanent Life',       carrier:'aflac', annualPrem:3600, pct:58.5 },
+  { k:'std',        label:'Short-Term Disability',carrier:'aflac', annualPrem:400,  pct:60 },
+  { k:'ltd',        label:'Long-Term Disability', carrier:'aflac', annualPrem:400,  pct:60 },
+  { k:'dental',     label:'Dental',               carrier:'other', annualPrem:300,  pct:25 },
+  { k:'vision',     label:'Vision',               carrier:'other', annualPrem:120,  pct:25 },
+  { k:'hospital',   label:'Hospital Indemnity',   carrier:'aflac', annualPrem:360,  pct:45 },
+  { k:'cancer',     label:'Cancer',               carrier:'aflac', annualPrem:300,  pct:70 },
+  { k:'ci',         label:'Critical Illness',     carrier:'aflac', annualPrem:300,  pct:70 },
+  { k:'accident',   label:'Accident',             carrier:'aflac', annualPrem:216,  pct:48 }
 ];
 
-// ── BOTTOM LINE (ceiling) RATES for the pool calc ─────────────────
-// Channel One bottom-line product rates (full hierarchy combined) — used to compute the "Bottom Line Pool" metric.
-const BOTTOM_LINE_PCT = {
-  aflacSuite:57, permLife:90, std:50, ltd:50, dental:35, vision:30, hospital:46, cancer:60, ci:63, accident:50
+// Aflac BL splits (% of Aflac pool after GA override)
+const BL_SHARES = {
+  BL1:  { broker:30, enroller:49, dsc:10, rsc:6 },
+  BL2:  { broker:40, enroller:41, dsc:9,  rsc:5 },
+  BL3:  { broker:50, enroller:34, dsc:7,  rsc:4 },
+  BL4:  { broker:90, enroller:5,  dsc:0,  rsc:0 }
 };
 
-// ── PRODUCT SCENARIOS ───────────────────────────────────────────────
+// Scenario presets (penetration % per product)
 const SCENARIOS = {
-  blank:    { ee:25, acaPmpm:0,  acaOver:0,   erPepm:0,  pen:{ aflacSuite:0, permLife:0, std:0, ltd:0, dental:0, vision:0, hospital:0, cancer:0, ci:0, accident:0 } },
-  aflacOnly:{ ee:25, acaPmpm:0,  acaOver:0,   erPepm:20, pen:{ aflacSuite:35, permLife:0, std:0, ltd:0, dental:0, vision:0, hospital:0, cancer:0, ci:0, accident:0 } },
-  aflacPerm:{ ee:25, acaPmpm:0,  acaOver:0,   erPepm:20, pen:{ aflacSuite:40, permLife:25, std:0, ltd:0, dental:0, vision:0, hospital:0, cancer:0, ci:0, accident:0 } },
-  allAnc:   { ee:25, acaPmpm:0,  acaOver:0,   erPepm:20, pen:{ aflacSuite:45, permLife:30, std:60, ltd:60, dental:0, vision:0, hospital:0, cancer:0, ci:0, accident:0 } },
-  allBen:   { ee:25, acaPmpm:20, acaOver:3.9, erPepm:20, pen:{ aflacSuite:60, permLife:30, std:80, ltd:80, dental:50, vision:40, hospital:30, cancer:25, ci:25, accident:40 } }
+  blank:    { ee:25, pen:{ aflacSuite:0,  permLife:0,  std:0,  ltd:0,  dental:0, vision:0, hospital:0, cancer:0, ci:0, accident:0 } },
+  aflacOnly:{ ee:25, pen:{ aflacSuite:35, permLife:0,  std:0,  ltd:0,  dental:0, vision:0, hospital:0, cancer:0, ci:0, accident:0 } },
+  aflacPerm:{ ee:25, pen:{ aflacSuite:40, permLife:25, std:0,  ltd:0,  dental:0, vision:0, hospital:0, cancer:0, ci:0, accident:0 } },
+  allAnc:   { ee:25, pen:{ aflacSuite:45, permLife:30, std:60, ltd:60, dental:0, vision:0, hospital:0, cancer:0, ci:0, accident:0 } },
+  allBen:   { ee:25, pen:{ aflacSuite:55, permLife:30, std:50, ltd:50, dental:50, vision:40, hospital:30, cancer:25, ci:25, accident:40 } }
 };
 
-// ── COMP MODELS (just decide who's at the table) ────────────────────
-const MODELS = {
-  standard:    { parties:['ga','tpa','fmo','broker','enroller'] },
-  aflacDsc:    { parties:['ga','tpa','fmo','broker','enroller','dsc'] },
-  aflacDscRsc: { parties:['ga','tpa','fmo','broker','enroller','dsc','rsc'] }
+const PARTY_INFO = {
+  tpa:      { label:'TPA Admin',    sub:'Billing + compliance' },
+  fmo:      { label:'FMO',          sub:'ACA carrier + AOR + override' },
+  ga:       { label:'Channel (GA)', sub:'Training + activation + plan design' },
+  broker:   { label:'Broker',       sub:'Account ownership (Level 14)' },
+  enroller: { label:'Enroller',     sub:'Aflac writing agent (Level 01)' },
+  dsc:      { label:'DSC',          sub:'Aflac district (Level 30)', hierarchy:true },
+  rsc:      { label:'RSC',          sub:'Aflac region (Level 40)', hierarchy:true }
 };
-
-// ── OPERATING SCENARIOS · drive matrix defaults ────────────────────
-// Returns matrix defaults given parties + BL package. PEPM column gets overlaid by tier rule.
-const OPERATING_SCENARIOS = {
-  brokerLed:     { name:'Broker-Led',       blDefault:'BL4', model:'standard',
-    notes:'Broker does everything; almost no Aflac left for hierarchy.',
-    base:{
-      acaPmpm: { ga:5,  fmo:0, broker:65, enroller:30, dsc:0, rsc:0 },
-      other:   { ga:5,  fmo:0, broker:90, enroller:5,  dsc:0, rsc:0 }
-    }
-  },
-  brokerChannel: { name:'Broker + Channel', blDefault:'BL2', model:'aflacDscRsc',
-    notes:'Broker writes, Channel (GA) trains/enrolls. DSC + RSC paid.',
-    base:{
-      acaPmpm: { ga:35, fmo:0, broker:55, enroller:10, dsc:0, rsc:0 },
-      other:   { ga:25, fmo:0, broker:60, enroller:10, dsc:3, rsc:2 }
-    }
-  },
-  aflacInternal: { name:'Aflac-Internal',   blDefault:'NONE', model:'aflacDscRsc',
-    notes:'Aflac agent writes + enrolls. No broker. GA + FMO get Aflac overrides funded from DSC/RSC.',
-    base:{
-      acaPmpm: { ga:20, fmo:0, broker:0,  enroller:70, dsc:5,  rsc:5  },
-      other:   { ga:15, fmo:0, broker:0,  enroller:60, dsc:15, rsc:10 }
-    }
-  }
-};
-
-// Aflac column defaults per BL package — blended from level tables (DSC L30, RSC L40)
-// FMO matrix Aflac=0 always (FMO Aflac comp lives in the override row to avoid double-count).
-// Reference (Cancer level breakdown, % of premium):
-//   BL1: Agent 24%, Broker 5.9%, DSC 6.35%, RSC 3.65%, Director 4.6%  -> bottom ~52%
-//   BL2: Agent 20%, Broker 8.1%, DSC 5.80%, RSC 3.00%, Director 4.6%
-//   BL3: Agent 17%, Broker 9.9%, DSC 4.55%, RSC 2.50%, Director 4.6%
-//   BL4: Agent 0%,  Broker 18.7%, DSC 0%,    RSC 0%,    Director 4.6%
-// Translated to % of Aflac comp pool (broker share from comprehensive sheet: BL1~30, BL2~40, BL3~50, BL4~95):
-const BL_AFLAC_DEFAULTS = {
-  // Channel (GA) override is FIXED at 5% always. If Channel also acts as broker, bump Broker row.
-  // If Channel also enrolls, bump Enroller row down to whatever the actual Aflac agent earns and
-  // shift the rest to Channel. Defaults below assume Channel is just the GA, not wearing other hats.
-  BL1:  { ga:5, fmo:0, broker:30, enroller:49, dsc:10, rsc:6 },
-  BL2:  { ga:5, fmo:0, broker:40, enroller:41, dsc:9,  rsc:5 },
-  BL3:  { ga:5, fmo:0, broker:50, enroller:34, dsc:7,  rsc:4 },
-  BL4:  { ga:5, fmo:0, broker:90, enroller:5,  dsc:0,  rsc:0 },
-  NONE: { ga:5, fmo:0, broker:0,  enroller:73, dsc:14, rsc:8 }
-};
-// (FMO Aflac slice flows through the FMO Override row, not this column.)
 
 // ── STATE ───────────────────────────────────────────────────────────
-let currentModel = 'standard';
-let currentOpScn = 'brokerChannel';
-let currentScenario = 'allAnc';
+let aflacContrib = false;
+let hasBroker = true;
 let currentBL = 'BL2';
-let enrollerMode = 'pct';
-let alloc = {};
+let currentScenario = 'allAnc';
 const productState = {};
-PRODUCTS.forEach(p => { productState[p.k] = { on:true, carrier:p.carrier, pen:0, prem:p.annualPrem, pct:p.pct }; });
+PRODUCTS.forEach(p => { productState[p.k] = { carrier:p.carrier, pen:0, prem:p.annualPrem, pct:p.pct }; });
 
 const $ = id => document.getElementById(id);
 const fmt0 = n => '$' + Math.round(n).toLocaleString();
+const A = key => parseFloat($('a_' + key).value) || 0;
 
-// ── PEPM TIER RULE ──────────────────────────────────────────────────
-// Returns { tpa, fmo, broker } as %s of the ER PEPM allocation.
-function pepmTierShares(erPepm) {
-  if (erPepm <= 0) return { tpa:0, fmo:0, broker:0, tpaDol:0, fmoDol:0, brokerDol:0 };
-  const tpaDol = Math.min(10, erPepm);
-  const fmoDol = Math.min(10, Math.max(0, erPepm - 10));
-  const brokerDol = Math.max(0, erPepm - 20);
-  const tpa = (tpaDol / erPepm) * 100;
-  const fmo = (fmoDol / erPepm) * 100;
-  const broker = (brokerDol / erPepm) * 100;
-  return { tpa, fmo, broker, tpaDol, fmoDol, brokerDol };
-}
-
-// ── LOAD ALLOC DEFAULTS (driven by Operating Scenario + BL + PEPM rule) ──
-function loadAllocDefaults() {
-  const op = OPERATING_SCENARIOS[currentOpScn];
-  const parties = MODELS[currentModel].parties;
-  // PEPM column from tier rule
-  const erPepm = parseFloat($('erPepm').value) || 0;
-  const tier = pepmTierShares(erPepm);
-  const ePepm = { ga:0, tpa:tier.tpa, fmo:tier.fmo, broker:tier.broker, enroller:0, dsc:0, rsc:0 };
-  // ACA Override: 100% FMO always
-  const eAcaOver = { ga:0, tpa:0, fmo:100, broker:0, enroller:0, dsc:0, rsc:0 };
-  // Aflac column from BL package defaults (blended DSC/RSC reflecting Aflac level tables)
-  const aflacRow = BL_AFLAC_DEFAULTS[currentBL] || BL_AFLAC_DEFAULTS.BL2;
-  function pick(row) {
-    const out = {};
-    parties.forEach(p => { out[p] = row[p] !== undefined ? row[p] : 0; });
-    return out;
-  }
-  alloc = {
-    erPepm:  pick(ePepm),
-    acaPmpm: pick(op.base.acaPmpm),
-    acaOver: pick(eAcaOver),
-    aflac:   pick(aflacRow),
-    other:   pick(op.base.other)
-  };
-}
-
-// ── RENDER MATRIX ───────────────────────────────────────────────────
-function renderMatrix() {
-  const parties = MODELS[currentModel].parties;
-  const head = ['<th>Party</th>']
-    .concat(STREAMS.map(s => `<th>${s.short}<span class="smol">${s.label}</span></th>`))
-    .concat(['<th>$ / mo<span class="smol">$ / yr</span></th>']).join('');
-  $('matrixHead').innerHTML = head;
-  $('matrixBody').innerHTML = parties.map(k => {
-    const p = PARTY_INFO[k];
-    const hCls = p.hierarchy ? ' hierarchy' : '';
-    const cells = STREAMS.map(s => {
-      const v = alloc[s.k][k] !== undefined ? alloc[s.k][k] : 0;
-      return `<td class="pct-cell"><input type="number" class="pct-input" data-cell="${s.k}_${k}" min="0" max="100" step="0.5" value="${v}"><span class="pct-suffix">%</span></td>`;
-    }).join('');
-    return `<tr class="party-row${hCls}" data-party="${k}"><td class="party-name">${p.label}<span class="sub">${p.brings}</span></td>${cells}<td class="money" data-take="${k}">$0<span class="yr">$0 / yr</span></td></tr>`;
-  }).join('');
-  const sumCells = STREAMS.map(s => `<td class="col-sum" data-colsum="${s.k}">0%</td>`).join('');
-  $('matrixFoot').innerHTML = `<td>Column sum</td>${sumCells}<td class="money" id="matrixGrandFoot">$0</td>`;
-  document.querySelectorAll('.pct-input').forEach(inp => {
-    inp.addEventListener('input', () => {
-      const [stream, party] = inp.dataset.cell.split('_');
-      alloc[stream][party] = parseFloat(inp.value) || 0;
-      recalc();
-    });
-  });
-}
-
-// ── RENDER PRODUCT TABLE ────────────────────────────────────────────
-function renderProducts() {
+// ── ASSUMP RENDERING ────────────────────────────────────────────────
+function renderProductsAssump() {
   $('prodBody').innerHTML = PRODUCTS.map(p => {
     const s = productState[p.k];
     const isAflac = s.carrier === 'aflac';
-    return `<tr class="prod-tr${s.on?'':' off'}" data-k="${p.k}">
-      <td class="check-cell"><input type="checkbox" data-on="${p.k}" ${s.on?'checked':''}></td>
-      <td class="prod-name">${p.label}<span class="sub">${p.desc}</span></td>
-      <td class="carrier-cell"><div class="carrier-toggle"><button type="button" data-car="${p.k}_aflac" class="${isAflac?'active':''}">Aflac</button><button type="button" data-car="${p.k}_other" class="${isAflac?'':'active'}">Other</button></div></td>
-      <td class="pct-cell"><input type="number" data-pen="${p.k}" min="0" max="100" step="1" value="${s.pen}"><span style="color:var(--ink-soft);font-family:var(--mono);font-size:11px">%</span></td>
-      <td class="prem-cell"><span style="color:var(--ink-soft);font-family:var(--mono);font-size:11px">$</span> <input type="number" data-prem="${p.k}" min="0" max="100000" step="10" value="${s.prem}"></td>
-      <td class="cm-cell"><input type="number" data-pct="${p.k}" min="0" max="200" step="0.5" value="${s.pct}"><span style="color:var(--ink-soft);font-family:var(--mono);font-size:11px">%</span></td>
-      <td class="out-cell" data-out="${p.k}">$0</td>
-      <td class="out-yr-cell" data-outyr="${p.k}">$0</td>
+    return `<tr data-k="${p.k}">
+      <td>${p.label}</td>
+      <td class="r"><div class="carrier-toggle"><button type="button" data-car="${p.k}_aflac" class="${isAflac?'active':''}">Aflac</button><button type="button" data-car="${p.k}_other" class="${isAflac?'':'active'}">Other</button></div></td>
+      <td class="r"><input type="number" data-pen="${p.k}" min="0" max="100" step="1" value="${s.pen}"></td>
+      <td class="r"><input type="number" data-prem="${p.k}" min="0" max="100000" step="10" value="${s.prem}"></td>
+      <td class="r"><input type="number" data-pct="${p.k}" min="0" max="200" step="0.5" value="${s.pct}"></td>
     </tr>`;
   }).join('');
-  document.querySelectorAll('[data-on]').forEach(cb => cb.addEventListener('change', () => { productState[cb.dataset.on].on = cb.checked; cb.closest('tr').classList.toggle('off', !cb.checked); recalc(); }));
   document.querySelectorAll('[data-car]').forEach(b => b.addEventListener('click', () => {
     const [k, car] = b.dataset.car.split('_'); productState[k].carrier = car;
-    b.parentNode.querySelectorAll('button').forEach(x => x.classList.remove('active')); b.classList.add('active'); recalc();
+    b.parentNode.querySelectorAll('button').forEach(x => x.classList.remove('active'));
+    b.classList.add('active'); recalc();
   }));
-  ['pen','prem','pct'].forEach(field => {
-    document.querySelectorAll(`[data-${field}]`).forEach(i => i.addEventListener('input', () => { productState[i.dataset[field]][field === 'pen' ? 'pen' : field === 'prem' ? 'prem' : 'pct'] = parseFloat(i.value) || 0; recalc(); }));
+  ['pen','prem','pct'].forEach(f => {
+    document.querySelectorAll(`[data-${f}]`).forEach(i => i.addEventListener('input', () => { productState[i.dataset[f]][f] = parseFloat(i.value) || 0; recalc(); }));
   });
 }
 
-// ── PEPM BAR VIZ ────────────────────────────────────────────────────
-function renderPepmBar() {
-  const erPepm = parseFloat($('erPepm').value) || 0;
-  const t = pepmTierShares(erPepm);
-  const bar = $('pepmBar');
-  if (erPepm <= 0) {
-    bar.innerHTML = '<div class="empty" style="flex:1">No PEPM</div>';
-    return;
-  }
-  const segs = [];
-  if (t.tpaDol > 0) segs.push(`<div class="tpa" style="flex:${t.tpaDol}">TPA $${t.tpaDol.toFixed(2)}</div>`);
-  if (t.fmoDol > 0) segs.push(`<div class="fmo" style="flex:${t.fmoDol}">FMO $${t.fmoDol.toFixed(2)}</div>`);
-  if (t.brokerDol > 0) segs.push(`<div class="broker" style="flex:${t.brokerDol}">Broker $${t.brokerDol.toFixed(2)}</div>`);
-  bar.innerHTML = segs.join('');
+function renderBlAssump() {
+  $('blBody').innerHTML = Object.entries(BL_SHARES).map(([bl, s]) => {
+    return `<tr><td>${bl}</td><td class="r">${s.broker}%</td><td class="r">${s.enroller}%</td><td class="r">${s.dsc}%</td><td class="r">${s.rsc}%</td></tr>`;
+  }).join('') + `<tr style="background:#FFF6EE"><td>None</td><td class="r" style="color:#8A8478">—</td><td class="r"><strong>73%</strong></td><td class="r"><strong>14%</strong></td><td class="r"><strong>8%</strong></td></tr>`;
 }
 
-// ── APPLY SCENARIO PRESET ──────────────────────────────────────────
-function applyProductScenario(name) {
+// ── SCENARIOS ───────────────────────────────────────────────────────
+function applyScenario(name) {
   currentScenario = name;
   const s = SCENARIOS[name];
   if (!s) return;
   $('ee').value = s.ee;
-  $('erPepm').value = s.erPepm;
-  $('acaPmpm').value = s.acaPmpm;
-  $('acaOver').value = s.acaOver;
   PRODUCTS.forEach(p => {
-    const pen = s.pen[p.k] !== undefined ? s.pen[p.k] : 0;
-    productState[p.k].pen = pen;
-    productState[p.k].on = pen > 0;
+    productState[p.k].pen = s.pen[p.k] || 0;
     productState[p.k].prem = p.annualPrem;
     productState[p.k].pct = p.pct;
     productState[p.k].carrier = p.carrier;
   });
-  renderProducts();
   document.querySelectorAll('[data-scn]').forEach(b => b.classList.toggle('active', b.dataset.scn === name));
-  loadAllocDefaults();
-  renderMatrix();
+  renderProductsAssump();
   recalc();
 }
 
-// ── APPLY OPERATING SCENARIO ────────────────────────────────────────
-function applyOperatingScenario(name) {
-  currentOpScn = name;
-  document.querySelectorAll('[data-scnop]').forEach(b => b.classList.toggle('active', b.dataset.scnop === name));
-  const op = OPERATING_SCENARIOS[name];
-  // Force comp model to whatever this op scenario expects (e.g. Aflac+DSC+RSC for Channel)
-  currentModel = op.model;
-  document.querySelectorAll('[data-model]').forEach(c => c.classList.toggle('active', c.dataset.model === currentModel));
-  // Set BL default
-  currentBL = op.blDefault;
-  applyBL(currentBL, /*skipRecalc*/ true);
-  loadAllocDefaults();
-  renderMatrix();
+// ── TOGGLES ─────────────────────────────────────────────────────────
+function setAflacContrib(on) {
+  aflacContrib = on;
+  $('aflacContribNo').classList.toggle('active', !on);
+  $('aflacContribYes').classList.toggle('active', on);
   recalc();
 }
-
-// ── APPLY BL PACKAGE ────────────────────────────────────────────────
-function applyBL(bl, skipRecalc) {
+function setBroker(on) {
+  hasBroker = on;
+  $('brokerYes').classList.toggle('active', on);
+  $('brokerNo').classList.toggle('active', !on);
+  $('blField').style.opacity = on ? '1' : '0.4';
+  document.querySelectorAll('.bl-pill').forEach(p => p.disabled = !on);
+  recalc();
+}
+function setBL(bl) {
   currentBL = bl;
-  document.querySelectorAll('[data-bl]').forEach(b => b.classList.toggle('active', b.dataset.bl === bl));
-  const meta = {
-    BL1:'BL1 — Broker 30% / Enroller 49% / DSC 10% / RSC 6% / Channel 5%.',
-    BL2:'BL2 — Broker 40% / Enroller 41% / DSC 9% / RSC 5% / Channel 5%. Balanced default.',
-    BL3:'BL3 — Broker 50% / Enroller 34% / DSC 7% / RSC 4% / Channel 5%.',
-    BL4:'BL4 — Broker 90% / Enroller 5% / DSC + RSC zeroed / Channel 5%.',
-    NONE:'No broker — Enroller (Aflac agent) 73% / DSC 14% / RSC 8% / Channel 5%.'
-  };
-  $('blMeta').textContent = meta[bl] || '';
-  // Reload the Aflac column from BL defaults (skip if init suppressed)
-  if (!skipRecalc) {
-    const parties = MODELS[currentModel].parties;
-    const row = BL_AFLAC_DEFAULTS[bl] || BL_AFLAC_DEFAULTS.BL2;
-    parties.forEach(p => { alloc.aflac[p] = row[p] !== undefined ? row[p] : 0; });
-    renderMatrix();
-    recalc();
-  }
+  document.querySelectorAll('[data-bl]').forEach(p => p.classList.toggle('active', p.dataset.bl === bl));
+  recalc();
 }
 
-// ── CALC ────────────────────────────────────────────────────────────
+// ── MAIN CALC ───────────────────────────────────────────────────────
 function recalc() {
   const ee = parseFloat($('ee').value) || 0;
-  const dep = parseFloat($('depFactor').value) || 0;
+  const dep = A('depFactor');
   const members = ee * dep;
   $('totalMembers').textContent = Math.round(members * 10) / 10;
 
-  const erPepm = parseFloat($('erPepm').value) || 0;
-  const acaPmpm = parseFloat($('acaPmpm').value) || 0;
-  const acaOver = parseFloat($('acaOver').value) || 0;
-  const erPepmMo = ee * erPepm;
-  const acaPmpmMo = members * acaPmpm;
-  const acaOverMo = members * acaOver;
+  // Stream amounts
+  const erBase = A('erBase');
+  const erKicker = aflacContrib ? 0 : (A('gaKicker') + A('brokerKicker'));
+  const erPepm = erBase + erKicker;
+  const erMo = ee * erPepm;
 
-  $('erPepmOut').innerHTML  = fmt0(erPepmMo)  + '<span class="yr">' + fmt0(erPepmMo*12)  + ' / yr</span>';
-  $('acaPmpmOut').innerHTML = fmt0(acaPmpmMo) + '<span class="yr">' + fmt0(acaPmpmMo*12) + ' / yr</span>';
-  $('acaOverOut').innerHTML = fmt0(acaOverMo) + '<span class="yr">' + fmt0(acaOverMo*12) + ' / yr</span>';
-  renderPepmBar();
+  const acaPmpmMo = members * A('acaPmpm');
+  const acaOverMo = members * A('acaOver');
 
-  let aflacMo = 0, otherMo = 0, ceilingMo = 0;
+  // Aflac + Other from product table
+  let aflacMo = 0, otherMo = 0;
   PRODUCTS.forEach(p => {
     const s = productState[p.k];
-    let mo = 0, ceilMo = 0;
-    if (s.on) {
-      mo = ee * (s.pen/100) * s.prem * (s.pct/100) / 12;
-      // Ceiling uses bottom-line full rate at user's premium + penetration
-      const bottomPct = BOTTOM_LINE_PCT[p.k] || s.pct;
-      ceilMo = ee * (s.pen/100) * s.prem * (bottomPct/100) / 12;
-    }
-    const outEl = document.querySelector(`[data-out="${p.k}"]`);
-    const outYrEl = document.querySelector(`[data-outyr="${p.k}"]`);
-    if (outEl) { outEl.textContent = fmt0(mo); }
-    if (outYrEl) { outYrEl.textContent = fmt0(mo*12); }
-    if (s.on) {
-      if (s.carrier === 'aflac') aflacMo += mo; else otherMo += mo;
-      ceilingMo += ceilMo;
-    }
-  });
-  $('aflacSub').innerHTML = fmt0(aflacMo) + '<span class="yr">' + fmt0(aflacMo*12) + ' / yr</span>';
-  $('otherSub').innerHTML = fmt0(otherMo) + '<span class="yr">' + fmt0(otherMo*12) + ' / yr</span>';
-  const prodTotal = aflacMo + otherMo;
-  $('prodTotal').innerHTML = fmt0(prodTotal) + '<span class="yr">' + fmt0(prodTotal*12) + ' / yr</span>';
-
-  // FMO Aflac override (separate from matrix — adds straight to FMO take)
-  const fmoAflacPct = parseFloat($('fmoAflacPct').value) || 0;
-  const fmoAflacBonus = parseFloat($('fmoAflacBonus').value) || 0;
-  const fmoOverrideMo = aflacMo * (fmoAflacPct/100) + fmoAflacBonus;
-  $('fmoAflacOut').innerHTML = fmt0(fmoOverrideMo) + '<span class="yr">' + fmt0(fmoOverrideMo*12) + ' / yr</span>';
-
-  const monthly = erPepmMo + acaPmpmMo + acaOverMo + aflacMo + otherMo;
-  const annual = monthly * 12;
-  const ceiling = (erPepmMo + acaPmpmMo + acaOverMo + ceilingMo);
-  $('streamsTotal').textContent = fmt0(monthly) + ' / mo';
-  $('gtEr').textContent = fmt0(erPepmMo);
-  $('gtAca').textContent = fmt0(acaPmpmMo);
-  $('gtAcaOver').textContent = fmt0(acaOverMo);
-  $('gtAflac').textContent = fmt0(aflacMo);
-  $('gtOther').textContent = fmt0(otherMo);
-  $('gtMo').textContent = fmt0(monthly);
-  $('gtYr').textContent = fmt0(annual) + ' / yr';
-  $('gtCeiling').textContent = fmt0(ceiling * 12) + ' / yr';
-  $('matrixGrand').textContent = fmt0(monthly);
-
-  // ── ALLOCATION ──
-  const parties = MODELS[currentModel].parties;
-  const streamAmounts = { erPepm:erPepmMo, acaPmpm:acaPmpmMo, acaOver:acaOverMo, aflac:aflacMo, other:otherMo };
-  const partyTake = {};
-  const partyByStream = {};
-  parties.forEach(p => { partyTake[p] = 0; partyByStream[p] = { erPepm:0, acaPmpm:0, acaOver:0, aflac:0, other:0 }; });
-
-  const usePctEnroller = (enrollerMode === 'pct');
-
-  STREAMS.forEach(s => {
-    let colSum = 0;
-    parties.forEach(p => {
-      let pct = alloc[s.k][p] !== undefined ? alloc[s.k][p] : 0;
-      let effPct = pct;
-      if (!usePctEnroller && p === 'enroller') effPct = 0;
-      const dollars = streamAmounts[s.k] * (effPct / 100);
-      partyTake[p] += dollars;
-      partyByStream[p][s.k] = dollars;
-      colSum += pct;
-    });
-    const cs = document.querySelector(`[data-colsum="${s.k}"]`);
-    if (cs) {
-      const r = Math.round(colSum * 10) / 10;
-      cs.textContent = r + '%';
-      cs.classList.remove('warn','err','ok');
-      if (Math.abs(r - 100) < 0.05) cs.classList.add('ok');
-      else if (Math.abs(r - 100) <= 5) cs.classList.add('warn');
-      else cs.classList.add('err');
-    }
+    const mo = ee * (s.pen/100) * s.prem * (s.pct/100) / 12;
+    if (s.carrier === 'aflac') aflacMo += mo; else otherMo += mo;
   });
 
-  // Add FMO Aflac override on top
-  if (partyTake.fmo !== undefined) {
-    partyTake.fmo += fmoOverrideMo;
-    partyByStream.fmo.aflac += fmoOverrideMo;
-  }
-  // Per-diem on top for enroller
-  if (!usePctEnroller && partyTake.enroller !== undefined) {
-    const diem = parseFloat($('enrDiem').value) || 0;
-    partyTake.enroller += diem;
+  // FMO Aflac override on top
+  const fmoAflacOver = aflacMo * (A('fmoAflacPct')/100) + A('fmoBonus');
+
+  // ER bill cards
+  const noKicker = A('erBase') + A('gaKicker') + A('brokerKicker');
+  $('erBillNoVal').textContent = '$' + noKicker + ' PEPM';
+  $('erBillYesVal').textContent = '$' + A('erBase') + ' PEPM';
+  $('erBillNo').classList.toggle('active', !aflacContrib);
+  $('erBillYes').classList.toggle('active', aflacContrib);
+
+  // ── DISTRIBUTE ──
+  const take = { tpa:0, fmo:0, ga:0, broker:0, enroller:0, dsc:0, rsc:0 };
+
+  // Stream C — ER PEPM
+  take.tpa += ee * A('tpaPepm');
+  take.fmo += ee * A('fmoErPepm');
+  if (!aflacContrib) {
+    if (hasBroker) {
+      take.ga     += ee * A('gaKicker');
+      take.broker += ee * A('brokerKicker');
+    } else {
+      // writing agent absorbs both kickers
+      take.enroller += ee * (A('gaKicker') + A('brokerKicker'));
+    }
   }
 
-  let totalTake = 0;
-  parties.forEach(p => {
-    const el = document.querySelector(`[data-take="${p}"]`);
-    if (el) el.innerHTML = fmt0(partyTake[p]) + '<span class="yr">' + fmt0(partyTake[p]*12) + ' / yr</span>';
-    totalTake += partyTake[p];
-  });
-  const ft = $('matrixGrandFoot');
-  if (ft) ft.textContent = fmt0(totalTake);
+  // Stream B — ACA PMPM (first-dollar-out PEPM amounts, capped by total available)
+  let remaining = acaPmpmMo;
+  const fmoTake = Math.min(ee * A('fmoAor'), remaining); remaining -= fmoTake;
+  take.fmo += fmoTake;
+  const gaTake = Math.min(ee * A('gaAca'), remaining); remaining -= gaTake;
+  take.ga += gaTake;
+  // Broker pool = remaining
+  if (hasBroker) {
+    const ptThrough = Math.min(remaining, ee * A('passThrough'));
+    const brokerKeep = remaining - ptThrough;
+    take.broker += brokerKeep;
+    take.enroller += ptThrough;
+  } else {
+    take.enroller += remaining;  // writing agent absorbs all
+  }
 
-  // ── VIZ ──
-  renderViz(parties, partyByStream, partyTake);
-}
+  // Stream A — ACA Override → FMO
+  take.fmo += acaOverMo;
 
-// ── VIZ ─────────────────────────────────────────────────────────────
-function renderViz(parties, byStream, takes) {
-  const maxTake = Math.max(0.0001, ...parties.map(p => takes[p]));
+  // Stream D — Aflac
+  const gaAflac = aflacMo * (A('gaAflacPct')/100);
+  take.ga += gaAflac;
+  take.fmo += fmoAflacOver;
+  const aflacPool = aflacMo - gaAflac;
+  const shares = hasBroker ? BL_SHARES[currentBL] : { broker:0, enroller:73, dsc:14, rsc:8 };
+  const sharesSum = shares.broker + shares.enroller + shares.dsc + shares.rsc;
+  const norm = sharesSum > 0 ? 1 / sharesSum : 0;
+  const brokerAflac   = aflacPool * shares.broker   * norm;
+  const enrollerAflac = aflacPool * shares.enroller * norm;
+  const dscAflac      = aflacPool * shares.dsc      * norm;
+  const rscAflac      = aflacPool * shares.rsc      * norm;
+  if (hasBroker) take.broker += brokerAflac;
+  else           take.enroller += brokerAflac;  // writing agent
+  take.enroller += enrollerAflac;
+  take.dsc += dscAflac;
+  take.rsc += rscAflac;
+
+  // Stream D — Other Carrier
+  const otherGa = otherMo * (A('otherGaPct')/100);
+  const otherRem = otherMo - otherGa;
+  const otherBroker = otherRem * (A('otherBrokerPct')/100);
+  const otherEnroller = otherRem - otherBroker;
+  take.ga += otherGa;
+  if (hasBroker) take.broker += otherBroker;
+  else           take.enroller += otherBroker;
+  take.enroller += otherEnroller;
+
+  // Render
+  const monthly = erMo + acaPmpmMo + acaOverMo + aflacMo + otherMo;
+  $('gbMonthly').textContent = fmt0(monthly);
+  $('gbAnnual').textContent = fmt0(monthly * 12);
+  $('gbAflac').textContent = fmt0(aflacMo);
+
+  const parties = ['tpa','fmo','ga','broker','enroller','dsc','rsc'];
+  $('takesBody').innerHTML = parties.map(p => {
+    const info = PARTY_INFO[p];
+    const t = take[p];
+    const perEE = ee > 0 ? t / ee : 0;
+    const hCls = info.hierarchy ? ' class="hierarchy"' : '';
+    const isZero = t < 1;
+    return `<tr${hCls}><td>${info.label}<span class="party-sub">${info.sub}</span></td><td${isZero?' class="zero"':''}>${fmt0(t)}</td><td${isZero?' class="zero"':''}>${fmt0(t*12)}</td><td${isZero?' class="zero"':''}>$${perEE.toFixed(2)}</td></tr>`;
+  }).join('');
+  const totalCheck = parties.reduce((a,p) => a + take[p], 0);
+  $('takesFoot').innerHTML = `<td>Total</td><td>${fmt0(totalCheck)}</td><td>${fmt0(totalCheck*12)}</td><td>$${ee>0 ? (totalCheck/ee).toFixed(2) : '0.00'}</td>`;
+
+  // Viz
+  const maxT = Math.max(0.0001, ...parties.map(p => take[p]));
   $('vizBars').innerHTML = parties.map(p => {
-    const t = takes[p];
-    const widthPct = (t / maxTake) * 100;
-    const parts = byStream[p];
-    const segTotal = (parts.erPepm + parts.acaPmpm + parts.acaOver + parts.aflac + parts.other) || 1;
-    const seg = (v, cls) => v > 0 ? `<div class="${cls}" style="flex:${v}">${v >= segTotal*0.10 ? fmt0(v) : ''}</div>` : '';
-    return `<div class="viz-row">
-      <div class="vname">${PARTY_INFO[p].label}<span class="vbring">${PARTY_INFO[p].brings}</span></div>
-      <div class="viz-bar" style="width:${widthPct}%">
-        ${seg(parts.erPepm,'er')}${seg(parts.acaPmpm,'aca')}${seg(parts.acaOver,'acaO')}${seg(parts.aflac,'aflac')}${seg(parts.other,'other')}
-      </div>
-      <div class="vtake">${fmt0(t)}<span class="yr">${fmt0(t*12)} / yr</span></div>
-    </div>`;
+    const t = take[p];
+    const wPct = (t / maxT) * 100;
+    return `<div class="viz-row"><div class="vname">${PARTY_INFO[p].label}</div><div class="viz-bar"><div class="fill" style="width:${wPct}%"></div></div><div class="vtake">${fmt0(t)}<span class="yr">${fmt0(t*12)} / yr</span></div></div>`;
   }).join('');
 }
 
 // ── EVENTS ──────────────────────────────────────────────────────────
-document.querySelectorAll('[data-model]').forEach(c => c.addEventListener('click', () => {
-  document.querySelectorAll('[data-model]').forEach(x => x.classList.remove('active'));
-  c.classList.add('active');
-  currentModel = c.dataset.model;
-  loadAllocDefaults();
-  renderMatrix();
-  recalc();
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+  t.classList.add('active');
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  $('panel-' + t.dataset.tab).classList.add('active');
 }));
-document.querySelectorAll('[data-scnop]').forEach(b => b.addEventListener('click', () => applyOperatingScenario(b.dataset.scnop)));
-document.querySelectorAll('[data-scn]').forEach(b => b.addEventListener('click', () => applyProductScenario(b.dataset.scn)));
-document.querySelectorAll('[data-bl]').forEach(b => b.addEventListener('click', () => applyBL(b.dataset.bl)));
 
-$('enrModePct').addEventListener('click', () => setEnrMode('pct'));
-$('enrModeDiem').addEventListener('click', () => setEnrMode('diem'));
-function setEnrMode(mode) {
-  enrollerMode = mode;
-  $('enrModePct').classList.toggle('active', mode === 'pct');
-  $('enrModeDiem').classList.toggle('active', mode === 'diem');
-  $('enrDiemRow').classList.toggle('hidden', mode !== 'diem');
-  $('enrollerHelp').textContent = mode === 'pct' ? '% of streams — enroller takes a slice from each stream\'s column.' : 'Per-diem — enroller paid a fixed $/mo on top; % shares zeroed for take-home.';
+document.querySelectorAll('[data-scn]').forEach(b => b.addEventListener('click', () => applyScenario(b.dataset.scn)));
+$('aflacContribNo').addEventListener('click', () => setAflacContrib(false));
+$('aflacContribYes').addEventListener('click', () => setAflacContrib(true));
+$('brokerYes').addEventListener('click', () => setBroker(true));
+$('brokerNo').addEventListener('click', () => setBroker(false));
+document.querySelectorAll('[data-bl]').forEach(b => b.addEventListener('click', () => setBL(b.dataset.bl)));
+$('ee').addEventListener('input', recalc);
+ASSUMP_KEYS.forEach(k => $('a_' + k).addEventListener('input', recalc));
+
+$('resetAssumpBtn').addEventListener('click', () => {
+  ASSUMP_KEYS.forEach(k => { $('a_' + k).value = DEFAULTS[k]; });
   recalc();
-}
-
-$('resetDefaultsBtn').addEventListener('click', () => { loadAllocDefaults(); renderMatrix(); recalc(); });
-$('normalizeBtn').addEventListener('click', () => {
-  const parties = MODELS[currentModel].parties;
-  STREAMS.forEach(s => {
-    const sum = parties.reduce((a,p) => a + (alloc[s.k][p] || 0), 0);
-    if (sum > 0) parties.forEach(p => { alloc[s.k][p] = Math.round(((alloc[s.k][p] || 0) / sum) * 1000) / 10; });
-  });
-  renderMatrix(); recalc();
-});
-
-['ee','depFactor','erPepm','acaPmpm','acaOver','enrDiem','fmoAflacPct','fmoAflacBonus'].forEach(id => {
-  const el = $(id);
-  if (el) el.addEventListener('input', () => {
-    if (id === 'erPepm') { loadAllocDefaults(); renderMatrix(); }
-    recalc();
-  });
 });
 
 // ── INIT ────────────────────────────────────────────────────────────
-applyOperatingScenario('brokerChannel');
-applyProductScenario('allAnc');
-renderProducts();
-renderPepmBar();
+renderProductsAssump();
+renderBlAssump();
+applyScenario('allAnc');
 recalc();
 </script>
 </body>
