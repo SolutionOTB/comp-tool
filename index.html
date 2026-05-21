@@ -140,6 +140,21 @@ input[type=number]:focus,input[type=text]:focus{outline:none;border-color:var(--
 
 .footnote{font-size:11px;color:var(--ink-soft);text-align:center;margin-top:24px;padding:0 12px;line-height:1.5}
 
+
+/* Generator buttons */
+.gen-section{margin-top:14px;padding:16px 18px;background:linear-gradient(135deg,var(--orange-soft) 0%,#FFD4B5 100%);border:1px solid var(--orange);border-radius:var(--r-md)}
+.gen-title{font-size:11px;font-weight:800;color:var(--navy-deep);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:4px}
+.gen-help{font-size:11.5px;color:var(--ink-dim);margin-bottom:12px;line-height:1.4}
+.gen-buttons{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.gen-btn{background:#fff;border:2px solid var(--orange);border-radius:var(--r-md);padding:14px 16px;cursor:pointer;font-family:var(--font);text-align:left;transition:all .15s}
+.gen-btn:hover{background:var(--navy);border-color:var(--navy);color:#fff;transform:translateY(-1px);box-shadow:var(--shadow-md)}
+.gen-btn .gb-icon{font-size:18px;margin-bottom:5px}
+.gen-btn .gb-title{font-size:13px;font-weight:800;color:var(--navy);letter-spacing:-0.2px;margin-bottom:2px}
+.gen-btn:hover .gb-title{color:#fff}
+.gen-btn .gb-sub{font-size:10.5px;color:var(--ink-dim);line-height:1.35}
+.gen-btn:hover .gb-sub{color:rgba(255,255,255,0.8)}
+@media (max-width:760px){.gen-buttons{grid-template-columns:1fr}}
+
 @media (max-width:760px){
   .input-grid{grid-template-columns:1fr}
   .er-bill-card{grid-template-columns:1fr}
@@ -268,6 +283,28 @@ input[type=number]:focus,input[type=text]:focus{outline:none;border-color:var(--
 
     <div class="help-block">
       <strong>Distribution rules:</strong> TPA always gets $10 PEPM. FMO always gets $10 PEPM + $10 (AOR) + 100% of ACA override. Channel gets $5 PEPM (Stream B) + $5 PEPM kicker (forfeited if ER contributes ≥$20 Aflac) + 5% Aflac override. Broker gets $5 PEPM kicker + $15 PEPM pool (keeps $7, passes $8 to Enroller) + BL package share of Aflac. Enroller gets pass-through from Broker + Aflac BL remainder. DSC + RSC get Aflac hierarchy slices. All defaults editable in the Assumptions tab.
+    </div>
+
+    <div class="gen-section">
+      <div class="gen-title">Generate One-Pager Proposals</div>
+      <div class="gen-help">Each button opens a new tab with a print-ready proposal using your <strong>current</strong> assumptions and case settings. Then Ctrl+P → Save as PDF.</div>
+      <div class="gen-buttons">
+        <button type="button" class="gen-btn" id="genAflac">
+          <div class="gb-icon">👤</div>
+          <div class="gb-title">Aflac Agent</div>
+          <div class="gb-sub">Three paths: cold Aflac, help enroll, bring account.</div>
+        </button>
+        <button type="button" class="gen-btn" id="genGA">
+          <div class="gb-icon">🏢</div>
+          <div class="gb-title">Channel (GA)</div>
+          <div class="gb-sub">Book scale: 10, 25, 50 accounts with annual income.</div>
+        </button>
+        <button type="button" class="gen-btn" id="genBroker">
+          <div class="gb-icon">📋</div>
+          <div class="gb-title">Broker</div>
+          <div class="gb-sub">Three outcomes: walk away, stay as broker, broker+enroll.</div>
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -631,6 +668,246 @@ function recalc() {
     const wPct = (t / maxT) * 100;
     return `<div class="viz-row"><div class="vname">${PARTY_INFO[p].label}</div><div class="viz-bar"><div class="fill" style="width:${wPct}%"></div></div><div class="vtake">${fmt0(t)}<span class="yr">${fmt0(t*12)} / yr</span></div></div>`;
   }).join('');
+
+  // Capture state for generators
+  lastCalc = { ee, members, aflacContrib, hasBroker, currentBL, aflacMo, otherMo, take };
+}
+
+// ── GLOBALS for generators ─────────────────────────────────────────
+let lastCalc = null;
+
+const PROPOSAL_CSS = `<style>
+  @page { size: letter; margin: 0.4in; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:-apple-system,'Segoe UI',system-ui,sans-serif;color:#1A1A1A;background:#F8F6F1;font-size:11px;line-height:1.45;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .page{width:7.7in;min-height:10.2in;background:#fff;padding:24px 28px;margin:0 auto;box-shadow:0 1px 6px rgba(0,0,0,.06)}
+  @media print{body{background:#fff}.page{box-shadow:none;margin:0;padding:0.25in 0.3in}}
+  .header{background:linear-gradient(135deg,#002D72 0%,#003D8F 100%);color:#fff;padding:18px 22px;border-radius:8px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:flex-end}
+  .header .eye{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#F37321;font-weight:700;margin-bottom:4px}
+  .header h1{font-size:24px;font-weight:800;letter-spacing:-0.5px;line-height:1.1}
+  .header .sub{font-size:12px;opacity:0.85;margin-top:3px}
+  .header .right{text-align:right;font-size:10px;opacity:0.7}
+  .header .right .brand{font-weight:800;font-size:13px;opacity:1}
+  .stitle{font-size:11px;font-weight:800;color:#002D72;text-transform:uppercase;letter-spacing:0.6px;margin:14px 0 8px;padding-bottom:5px;border-bottom:1px solid #E2E2E2;display:flex;justify-content:space-between;align-items:baseline}
+  .stitle .stotal{font-family:ui-monospace,Consolas,monospace;color:#F37321;font-size:12px}
+  .paths{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .path{border:1.5px solid #E2E2E2;border-radius:10px;padding:14px 16px;background:#fff;text-align:center}
+  .path .ptag{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#8A8478;font-weight:800;margin-bottom:3px}
+  .path .pname{font-size:14px;font-weight:800;color:#002D72;margin-bottom:8px;letter-spacing:-0.2px;line-height:1.2}
+  .path .pbig{font-size:28px;font-weight:800;color:#1A1A1A;letter-spacing:-0.7px;font-family:ui-monospace,Consolas,monospace;line-height:1}
+  .path .psub{font-size:10px;color:#535353;margin-top:4px}
+  .path .pmult{margin-top:8px;padding:4px 10px;background:#F1F1F1;border-radius:999px;display:inline-block;font-size:10px;font-weight:700;color:#535353;font-family:ui-monospace,Consolas,monospace}
+  .path.t1{border-color:#F37321;background:linear-gradient(135deg,#FFF6EE 0%,#FFE8D6 100%)}
+  .path.t1 .pname,.path.t1 .pbig{color:#F37321}
+  .path.t1 .pmult{background:#fff;color:#F37321}
+  .path.t2{border-color:#002D72;background:linear-gradient(135deg,#E8EEF7 0%,#002D72 200%);color:#fff}
+  .path.t2 .ptag{color:#F37321}
+  .path.t2 .pname,.path.t2 .pbig{color:#fff}
+  .path.t2 .psub{color:rgba(255,255,255,0.78)}
+  .path.t2 .pmult{background:#F37321;color:#fff}
+  .brkdwn-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:8px}
+  .brkdwn{background:#FBF9F4;border:1px solid #E2E2E2;border-radius:8px;padding:12px 14px}
+  .brkdwn .bh{font-size:9px;text-transform:uppercase;letter-spacing:1.3px;color:#8A8478;font-weight:800;margin-bottom:5px}
+  .brkdwn .bttl{font-size:12px;font-weight:800;color:#002D72;margin-bottom:8px;letter-spacing:-0.2px}
+  .brk-row{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-top:0.5px solid #F1F1F1;font-size:10px}
+  .brk-row:first-of-type{border-top:none}
+  .brk-k{color:#535353;line-height:1.3;padding-right:6px}
+  .brk-v{font-family:ui-monospace,Consolas,monospace;font-weight:800;color:#1A1A1A;white-space:nowrap}
+  .brk-tot{margin-top:6px;padding-top:6px;border-top:1.5px solid #002D72;display:flex;justify-content:space-between;font-size:12px;font-weight:800}
+  .brk-tot .v{font-family:ui-monospace,Consolas,monospace;color:#F37321}
+  .brk-yr{font-size:10px;color:#8A8478;font-weight:600;margin-top:2px;text-align:right}
+  .brk-empty{text-align:center;padding:20px 10px;color:#8A8478;font-style:italic;font-size:11px}
+  .book-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px;margin-top:8px}
+  .book-cell{padding:14px 16px;border-radius:8px;border:1px solid #E2E2E2;background:#fff;text-align:center}
+  .book-cell .blab{font-size:9px;text-transform:uppercase;letter-spacing:1.3px;color:#8A8478;font-weight:700;margin-bottom:3px}
+  .book-cell .bnum{font-size:22px;font-weight:800;color:#1A1A1A;font-family:ui-monospace,Consolas,monospace;letter-spacing:-0.5px;line-height:1}
+  .book-cell .bsub{font-size:9.5px;color:#535353;margin-top:3px}
+  .book-cell.t1{border-color:#F37321;background:#FFF6EE}.book-cell.t1 .bnum{color:#F37321}
+  .book-cell.t2{border-color:#002D72;background:#E8EEF7}.book-cell.t2 .bnum{color:#002D72}
+  .callout{background:#FFF6EE;border-left:4px solid #F37321;padding:11px 14px;border-radius:4px;margin-top:14px;font-size:10.5px;line-height:1.55}
+  .callout strong{color:#002D72}
+  .callout h3{font-size:12px;color:#002D72;margin-bottom:5px}
+  .callout ul{margin:6px 0 0 18px;line-height:1.6}
+  .footer{font-size:8.5px;color:#8A8478;text-align:center;margin-top:16px;line-height:1.45;padding-top:8px;border-top:1px solid #F1F1F1}
+  .print-hint{position:fixed;top:8px;right:8px;background:#002D72;color:#fff;padding:8px 14px;border-radius:6px;font-size:12px;font-weight:700;box-shadow:0 4px 12px rgba(0,0,0,0.2);z-index:1000}
+  @media print{.print-hint{display:none}}
+</style>`;
+
+function openProposal(title, bodyHtml) {
+  const html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>' + title + '</title>' + PROPOSAL_CSS + '</head><body><div class="print-hint">Ctrl+P → Save as PDF</div>' + bodyHtml + '</body></html>';
+  const w = window.open('', '_blank');
+  if (!w) { alert('Pop-up blocked — allow pop-ups for this page and try again.'); return; }
+  w.document.write(html);
+  w.document.close();
+}
+
+function brkRows(b) {
+  return Object.entries(b).map(([k,v]) => '<div class="brk-row"><span class="brk-k">'+k+'</span><span class="brk-v">'+fmt0(v)+'/mo</span></div>').join('');
+}
+
+function generateAflacAgent() {
+  if (!lastCalc) recalc();
+  const ee = lastCalc.ee || 25;
+  const dep = A('depFactor');
+  const aflacPerEE = ee > 0 ? lastCalc.aflacMo / ee : 0;
+  const coldRatio = 0.37;
+  function pathCold(ee_) {
+    const a = aflacPerEE * coldRatio * ee_;
+    return { mo: a * 0.60, breakdown: { 'Aflac comm (Suite + some Perm Life, ~60% kept at Level 01)': a * 0.60 } };
+  }
+  function pathHelp(ee_) {
+    const pt = ee_ * A('passThrough');
+    const aflacAct = aflacPerEE * ee_;
+    const pool = aflacAct * (1 - A('gaAflacPct')/100);
+    const enr = pool * 0.41;
+    return { mo: pt + enr, breakdown: {
+      ['ACA pass-through from broker ($' + A('passThrough') + ' PEPM)']: pt,
+      'Aflac Enroller share (41% of pool at BL2)': enr
+    }};
+  }
+  function pathBring(ee_) {
+    const kicker = ee_ * (A('gaKicker') + A('brokerKicker'));
+    const acaMo = ee_ * dep * A('acaPmpm');
+    const brokerPool = Math.max(0, acaMo - ee_ * A('fmoAor') - ee_ * A('gaAca'));
+    const aflacAct = aflacPerEE * ee_;
+    const pool = aflacAct * (1 - A('gaAflacPct')/100);
+    const enrNone = pool * 0.73;
+    return { mo: kicker + brokerPool + enrNone, breakdown: {
+      'ER PEPM kicker ($10 PEPM absorbed)': kicker,
+      'ACA broker pool (you are the broker)': brokerPool,
+      'Aflac share (73% of pool at NONE BL)': enrNone
+    }};
+  }
+  const p0 = pathCold(ee), p1 = pathHelp(ee), p2 = pathBring(ee);
+  const bookEE = 473;
+  const b0 = pathCold(bookEE), b1 = pathHelp(bookEE), b2 = pathBring(bookEE);
+  const m1 = p0.mo > 0 ? (p1.mo/p0.mo).toFixed(1) : '—';
+  const m2 = p0.mo > 0 ? (p2.mo/p0.mo).toFixed(1) : '—';
+  const dt = new Date().toLocaleString();
+
+  const body = '<div class="page">' +
+    '<div class="header"><div><div class="eye">For Aflac Agents · Two paths to win</div><h1>Your Earnings on an ICHRA Account</h1><div class="sub">Whether you bring the account, help with enrollment, or sell Aflac cold — here\'s the math.</div></div><div class="right"><div class="brand">OTB Solutions</div>Live ' + new Date().toLocaleDateString() + '</div></div>' +
+    '<div class="stitle"><span>Per ' + ee + '-EE account · annualized</span><span class="stotal">Three earning levels</span></div>' +
+    '<div class="paths">' +
+      '<div class="path"><div class="ptag">Path 0 · Baseline</div><div class="pname">Sell Aflac cold</div><div class="pbig">' + fmt0(p0.mo*12) + '</div><div class="psub">/yr · no ICHRA wrap</div><div class="pmult">' + fmt0(p0.mo) + '/mo</div></div>' +
+      '<div class="path t1"><div class="ptag">Path 1 · You enroll</div><div class="pname">Help with enrollment</div><div class="pbig">' + fmt0(p1.mo*12) + '</div><div class="psub">/yr · broker owns acct</div><div class="pmult">' + m1 + 'x cold</div></div>' +
+      '<div class="path t2"><div class="ptag">Path 2 · You own it</div><div class="pname">Bring the account</div><div class="pbig">' + fmt0(p2.mo*12) + '</div><div class="psub">/yr · no broker on case</div><div class="pmult">' + m2 + 'x cold</div></div>' +
+    '</div>' +
+    '<div class="stitle"><span>The math behind each path · per ' + ee + '-EE account</span></div>' +
+    '<div class="brkdwn-grid">' +
+      '<div class="brkdwn"><div class="bh">Path 0 · Baseline</div><div class="bttl">Cold Aflac selling</div>' + brkRows(p0.breakdown) + '<div class="brk-tot"><span>Monthly</span><span class="v">' + fmt0(p0.mo) + '</span></div><div class="brk-yr">' + fmt0(p0.mo*12) + ' / yr</div></div>' +
+      '<div class="brkdwn" style="border-color:#F37321"><div class="bh" style="color:#F37321">Path 1 · You enroll</div><div class="bttl">Help with enrollment</div>' + brkRows(p1.breakdown) + '<div class="brk-tot"><span>Monthly</span><span class="v">' + fmt0(p1.mo) + '</span></div><div class="brk-yr">' + fmt0(p1.mo*12) + ' / yr</div></div>' +
+      '<div class="brkdwn" style="border-color:#002D72"><div class="bh" style="color:#002D72">Path 2 · You own it</div><div class="bttl">Bring the account</div>' + brkRows(p2.breakdown) + '<div class="brk-tot"><span>Monthly</span><span class="v">' + fmt0(p2.mo) + '</span></div><div class="brk-yr">' + fmt0(p2.mo*12) + ' / yr</div></div>' +
+    '</div>' +
+    '<div class="stitle"><span>At scale · 25-account book (' + bookEE + ' EE)</span></div>' +
+    '<div class="book-row">' +
+      '<div class="book-cell"><div class="blab">25 accts · cold Aflac only</div><div class="bnum">' + fmt0(b0.mo*12) + '</div><div class="bsub">/yr</div></div>' +
+      '<div class="book-cell t1"><div class="blab">25 accts · help with enrollment</div><div class="bnum">' + fmt0(b1.mo*12) + '</div><div class="bsub">/yr · +' + fmt0((b1.mo-b0.mo)*12) + ' over cold</div></div>' +
+      '<div class="book-cell t2"><div class="blab">25 accts · bring the account</div><div class="bnum">' + fmt0(b2.mo*12) + '</div><div class="bsub">/yr · +' + fmt0((b2.mo-b0.mo)*12) + ' over cold</div></div>' +
+    '</div>' +
+    '<div class="callout"><h3>Why the gap is so wide</h3><ul>' +
+      '<li><strong>Path 0 · Cold Aflac</strong> — one shot per case, modest penetration, no recurring touchpoints.</li>' +
+      '<li><strong>Path 1 · Help enroll</strong> — mandatory ICHRA enrollment meeting puts you in front of every EE every year, plus an $' + A('passThrough') + ' PEPM pass-through from the broker.</li>' +
+      '<li><strong>Path 2 · Bring the account</strong> — you absorb the broker hat: the full ACA broker pool + $' + (A('gaKicker')+A('brokerKicker')) + ' PEPM kicker + broker BL share of Aflac.</li>' +
+    '</ul></div>' +
+    '<div class="footer">Generated from OTB Comp Calculator · ' + dt + ' · Assumptions reflect current calculator state. Not a guarantee.</div>' +
+  '</div>';
+  openProposal('Aflac Agent · Two Paths to Win', body);
+}
+
+function generateGA() {
+  if (!lastCalc) recalc();
+  const ee = lastCalc.ee || 25;
+  const aflacPerEE = ee > 0 ? lastCalc.aflacMo / ee : 0;
+  const gaKicker = lastCalc.aflacContrib ? 0 : A('gaKicker');
+  const gaAcaPMPM = A('gaAca');
+  const gaAflacOver = aflacPerEE * (A('gaAflacPct')/100);
+  const gaPerEE = gaKicker + gaAcaPMPM + gaAflacOver;
+  const eePerAcct = 19;
+  const b10 = 10*eePerAcct, b25 = 25*eePerAcct, b50 = 50*eePerAcct;
+  const y10 = gaPerEE*b10*12, y25 = gaPerEE*b25*12, y50 = gaPerEE*b50*12;
+  const m25 = y10 > 0 ? (y25/y10).toFixed(1) : '—';
+  const m50 = y10 > 0 ? (y50/y10).toFixed(1) : '—';
+  const dt = new Date().toLocaleString();
+
+  const body = '<div class="page">' +
+    '<div class="header"><div><div class="eye">For Channel · GA earnings</div><h1>Your Earnings at Book Scale</h1><div class="sub">Channel earns a recurring slice on every ICHRA account you train + activate. Here\'s how it compounds.</div></div><div class="right"><div class="brand">OTB Solutions</div>Live ' + new Date().toLocaleDateString() + '</div></div>' +
+    '<div class="stitle"><span>Three book sizes · annualized Channel income</span><span class="stotal">$' + gaPerEE.toFixed(2) + ' per EE / mo</span></div>' +
+    '<div class="paths">' +
+      '<div class="path"><div class="ptag">Starter</div><div class="pname">10 accounts</div><div class="pbig">' + fmt0(y10) + '</div><div class="psub">/yr · ' + b10 + ' EE under management</div><div class="pmult">' + fmt0(gaPerEE*b10) + '/mo</div></div>' +
+      '<div class="path t1"><div class="ptag">Year-1 Target</div><div class="pname">25 accounts</div><div class="pbig">' + fmt0(y25) + '</div><div class="psub">/yr · ' + b25 + ' EE under management</div><div class="pmult">' + m25 + 'x starter book</div></div>' +
+      '<div class="path t2"><div class="ptag">Mature</div><div class="pname">50 accounts</div><div class="pbig">' + fmt0(y50) + '</div><div class="psub">/yr · ' + b50 + ' EE under management</div><div class="pmult">' + m50 + 'x starter book</div></div>' +
+    '</div>' +
+    '<div class="stitle"><span>Where the $' + gaPerEE.toFixed(2) + ' per EE / mo comes from</span></div>' +
+    '<div class="brkdwn-grid">' +
+      '<div class="brkdwn"><div class="bh">Stream C</div><div class="bttl">ER PEPM Kicker</div><div class="brk-row"><span class="brk-k">$' + A('gaKicker') + ' PEPM ' + (lastCalc.aflacContrib?'(forfeited)':'(active)') + '</span><span class="brk-v">$' + gaKicker.toFixed(2) + '</span></div><div class="brk-tot"><span>Per EE / mo</span><span class="v">$' + gaKicker.toFixed(2) + '</span></div><div class="brk-yr">Conditional on ER Aflac contribution</div></div>' +
+      '<div class="brkdwn"><div class="bh">Stream B</div><div class="bttl">ACA PMPM Override</div><div class="brk-row"><span class="brk-k">$' + A('gaAca') + ' PEPM from ACA carrier</span><span class="brk-v">$' + gaAcaPMPM.toFixed(2) + '</span></div><div class="brk-tot"><span>Per EE / mo</span><span class="v">$' + gaAcaPMPM.toFixed(2) + '</span></div><div class="brk-yr">Always paid — fixed</div></div>' +
+      '<div class="brkdwn"><div class="bh">Stream D</div><div class="bttl">Aflac Override</div><div class="brk-row"><span class="brk-k">' + A('gaAflacPct') + '% × $' + aflacPerEE.toFixed(2) + ' Aflac/EE</span><span class="brk-v">$' + gaAflacOver.toFixed(2) + '</span></div><div class="brk-tot"><span>Per EE / mo</span><span class="v">$' + gaAflacOver.toFixed(2) + '</span></div><div class="brk-yr">Fixed across all BL packages</div></div>' +
+    '</div>' +
+    '<div class="callout"><h3>Why this is a Channel-friendly model</h3><ul>' +
+      '<li><strong>Recurring, not transactional</strong> — every account earns Channel income every month.</li>' +
+      '<li><strong>Hands-off after activation</strong> — once you\'ve trained the agent, the field force does the work.</li>' +
+      '<li><strong>Scales linearly</strong> — 50 accounts pays 5x what 10 accounts pays.</li>' +
+      '<li><strong>Forfeit-protected math</strong> — even losing the $5 PEPM kicker, you keep the $5 ACA override and 5% Aflac override.</li>' +
+    '</ul></div>' +
+    '<div class="footer">Generated from OTB Comp Calculator · ' + dt + ' · Reflects current calculator state.</div>' +
+  '</div>';
+  openProposal('Channel (GA) Earnings', body);
+}
+
+function generateBroker() {
+  if (!lastCalc) recalc();
+  const ee = lastCalc.ee || 25;
+  const dep = A('depFactor');
+  const aflacPerEE = ee > 0 ? lastCalc.aflacMo / ee : 0;
+  const aflacAct = aflacPerEE * ee;
+  const pool = aflacAct * (1 - A('gaAflacPct')/100);
+  const acaMo = ee * dep * A('acaPmpm');
+  const brokerPool = Math.max(0, acaMo - ee * A('fmoAor') - ee * A('gaAca'));
+  const kicker = ee * A('brokerKicker') * (lastCalc.aflacContrib ? 0 : 1);
+  const p1Keep = Math.max(0, brokerPool - ee * A('passThrough'));
+  const p1Aflac = pool * 0.40;
+  const p1Mo = kicker + p1Keep + p1Aflac;
+  const p2Keep = brokerPool;
+  const p2Aflac = pool * 0.95;
+  const p2Mo = kicker + p2Keep + p2Aflac;
+  const bookEE = 473;
+  const scale = ee > 0 ? bookEE / ee : 0;
+  const b1Yr = p1Mo * scale * 12;
+  const b2Yr = p2Mo * scale * 12;
+  const m2 = p1Mo > 0 ? (p2Mo/p1Mo).toFixed(1) : '—';
+  const dt = new Date().toLocaleString();
+  const p1Brk = { 'ER PEPM kicker': kicker, ['ACA broker keep (after $' + A('passThrough') + ' PEPM passthrough)']: p1Keep, 'Aflac 40% (BL2 broker share)': p1Aflac };
+  const p2Brk = { 'ER PEPM kicker': kicker, 'ACA broker keep (full pool — you enroll)': p2Keep, 'Aflac 95% (BL4 + Enroller share)': p2Aflac };
+
+  const body = '<div class="page">' +
+    '<div class="header"><div><div class="eye">For Brokers · ICHRA comp paths</div><h1>Three Outcomes on an ICHRA Account</h1><div class="sub">When a client asks about ICHRA, your choice changes the math.</div></div><div class="right"><div class="brand">OTB Solutions</div>Live ' + new Date().toLocaleDateString() + '</div></div>' +
+    '<div class="stitle"><span>Per ' + ee + '-EE account · annualized broker income</span><span class="stotal">Three engagement levels</span></div>' +
+    '<div class="paths">' +
+      '<div class="path"><div class="ptag">Path 0 · Pass</div><div class="pname">You lose the account</div><div class="pbig">$0</div><div class="psub">/yr · client goes DIY</div><div class="pmult">Walk-away</div></div>' +
+      '<div class="path t1"><div class="ptag">Path 1 · Engage</div><div class="pname">Stay as ICHRA broker</div><div class="pbig">' + fmt0(p1Mo*12) + '</div><div class="psub">/yr · BL2 broker package</div><div class="pmult">Recurring monthly</div></div>' +
+      '<div class="path t2"><div class="ptag">Path 2 · Own it</div><div class="pname">Broker + you enroll</div><div class="pbig">' + fmt0(p2Mo*12) + '</div><div class="psub">/yr · BL4 + you enroll</div><div class="pmult">' + m2 + 'x Path 1</div></div>' +
+    '</div>' +
+    '<div class="stitle"><span>The math behind each path · per ' + ee + '-EE account</span></div>' +
+    '<div class="brkdwn-grid">' +
+      '<div class="brkdwn"><div class="bh">Path 0 · Walk away</div><div class="bttl">You lose the account</div><div class="brk-empty">No earnings — client moves to DIY.</div><div class="brk-tot"><span>Monthly</span><span class="v">$0</span></div></div>' +
+      '<div class="brkdwn" style="border-color:#F37321"><div class="bh" style="color:#F37321">Path 1 · BL2 broker</div><div class="bttl">Stay as ICHRA broker</div>' + brkRows(p1Brk) + '<div class="brk-tot"><span>Monthly</span><span class="v">' + fmt0(p1Mo) + '</span></div><div class="brk-yr">' + fmt0(p1Mo*12) + ' / yr · per account</div></div>' +
+      '<div class="brkdwn" style="border-color:#002D72"><div class="bh" style="color:#002D72">Path 2 · BL4 + enroll</div><div class="bttl">Broker + you enroll yourself</div>' + brkRows(p2Brk) + '<div class="brk-tot"><span>Monthly</span><span class="v">' + fmt0(p2Mo) + '</span></div><div class="brk-yr">' + fmt0(p2Mo*12) + ' / yr · per account</div></div>' +
+    '</div>' +
+    '<div class="stitle"><span>At scale · 25-account book (' + bookEE + ' EE)</span></div>' +
+    '<div class="book-row">' +
+      '<div class="book-cell"><div class="blab">25 accts · walked away</div><div class="bnum">$0</div><div class="bsub">/yr · lost to DIY</div></div>' +
+      '<div class="book-cell t1"><div class="blab">25 accts · BL2 broker</div><div class="bnum">' + fmt0(b1Yr) + '</div><div class="bsub">/yr · recurring + sticky</div></div>' +
+      '<div class="book-cell t2"><div class="blab">25 accts · BL4 + enrollment</div><div class="bnum">' + fmt0(b2Yr) + '</div><div class="bsub">/yr · full revenue stream</div></div>' +
+    '</div>' +
+    '<div class="callout"><h3>Why ICHRA is your most defensible book</h3><ul>' +
+      '<li><strong>Path 0</strong> — client moves to a DIY ICHRA platform. You lose the account.</li>' +
+      '<li><strong>Path 1</strong> — same client, comp converted to PEPM-based recurring.</li>' +
+      '<li><strong>Path 2</strong> — same effort as Path 1 + sit-down meetings = ~2x the income.</li>' +
+    '</ul></div>' +
+    '<div class="footer">Generated from OTB Comp Calculator · ' + dt + ' · Reflects current calculator state.</div>' +
+  '</div>';
+  openProposal('Broker · Three Outcomes', body);
 }
 
 // ── EVENTS ──────────────────────────────────────────────────────────
@@ -654,6 +931,10 @@ $('resetAssumpBtn').addEventListener('click', () => {
   ASSUMP_KEYS.forEach(k => { $('a_' + k).value = DEFAULTS[k]; });
   recalc();
 });
+
+$('genAflac').addEventListener('click', generateAflacAgent);
+$('genGA').addEventListener('click', generateGA);
+$('genBroker').addEventListener('click', generateBroker);
 
 // ── INIT ────────────────────────────────────────────────────────────
 renderProductsAssump();
